@@ -7,6 +7,14 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
+    <!-- client -->
+    <uses-permission android:name="android.permission.USE_CREDENTIALS"/>
+    <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
+    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS"/>
+    <!-- Authenticator -->
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS"/>
 
     <application
         android:allowBackup="true"
@@ -47,6 +55,20 @@
             android:label="@string/app_name"
             android:theme="@style/AppTheme" />
 
-        <!--android:parentActivityName="com.dhenao.miestadio.ActividadPrincipalal"-->
     </application>
+
+    <!--receiver android:name=".system.BCReceiver">
+        <intent-filter>
+            <action android:name="android.provider.Telephony.SECRET_CODE"/>
+            <data android:scheme="android_secret_code" android:host="324126"/>
+        </intent-filter>
+    </receiver>
+
+    <receiver android:name=".ActividadPrincipal$DiagnoserReceiver">
+        <intent-filter>
+            <action android:name="android.provider.Telephony.SECRET_CODE"/>
+            <data android:scheme="android_secret_code" android:host="324126"/>
+        </intent-filter>
+    </receiver-->
+
 </manifest>

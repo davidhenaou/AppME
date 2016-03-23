@@ -2,6 +2,7 @@ package com.dhenao.miestadio;
 
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
@@ -91,6 +92,7 @@ public class ActividadPrincipal extends AppCompatActivity {
     // equipos JSONArray
     JSONArray equipos = null;
     public ListView lista;
+
 
 
     @Override
