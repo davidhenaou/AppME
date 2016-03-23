@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/contenidoitem1"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="1dp"
+    android:layout_gravity="center_vertical">
+
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:background="@drawable/fotoestadio">
+
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:weightSum="1">
+
+            <ImageButton
+                style="@style/ObjetoRedondo"
+                android:src="@drawable/objeto_redondo_transparente"
+                android:id="@+id/imagenequipo1"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:background="@drawable/equipo1"
+                android:layout_marginRight="10dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:onClick="clickEnImagen"
+                />
+
+
+
+
+
+
+            <TextView
+                style="@style/textenObjetoRectangularOscuro"
+                android:background="@drawable/objeto_rectangular_transparente"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/nombredeequipo1"
+                android:id="@+id/nombreequipo1"
+                />
+
+        </LinearLayout>
+
+
+
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="65dp"
+            android:gravity="center"
+
+
+            style="@style/textenObjetoRectangularOscuro"
+            android:background="@drawable/objeto_rectangular_transparente"
+            >
+
+            <TextView
+                style="@style/textenObjetoRectangularOscuro"
+
+                android:textAppearance="?android:attr/textAppearanceLarge"
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Vs" />
+
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center">
+
+                <TextView
+                    style="@style/textenObjetoRectangularOscuro"
+
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="5"
+                    android:id="@+id/marcadorequipo1" />
+
+                <TextView
+                    style="@style/textenObjetoRectangularOscuro"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="2dp"
+                    android:layout_marginLeft="2dp"
+                    android:text="-" />
+
+                <TextView
+                    style="@style/textenObjetoRectangularOscuro"
+
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1"
+                    android:id="@+id/marcadorequipo2" />
+
+            </LinearLayout>
+
+
+
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center">
+
+
+            <ImageButton
+                style="@style/ObjetoRedondo"
+                android:src="@drawable/objeto_redondo_transparente"
+                android:id="@+id/imagenequipo2"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:background="@drawable/equipo2"
+                android:layout_marginRight="10dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:onClick="clickEnImagen"
+                />
+
+            <TextView
+                style="@style/textenObjetoRectangularOscuro"
+                android:background="@drawable/objeto_rectangular_transparente"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/nombredeequipo2"
+                android:id="@+id/nombreequipo2" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/imagenresultante"
+        android:layout_gravity="center_horizontal" />
+
+</LinearLayout>

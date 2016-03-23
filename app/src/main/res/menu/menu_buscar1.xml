@@ -1,0 +1,12 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+xmlns:tools="http://schemas.android.com/tools"
+tools:context=".ActividadPrincipal">
+
+<item
+    android:id="@+id/accion_buscar"
+    android:icon="@drawable/busqueda"
+    android:orderInCategory="1"
+    android:title="@string/accion_buscar"
+    app:showAsAction="ifRoom" />
+</menu>

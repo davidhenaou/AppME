@@ -1,0 +1,60 @@
+<resources>
+    <string name="app_name">Mi Estadio</string>
+    <string name="usuario">David Henao</string>
+    <string name="email">davidhenaou@gmail.com</string>
+
+
+    <!--informacion del iten 1-->
+    <string name="nombredeequipo1">Medellín</string>
+    <string name="nombredeequipo2">Nacional</string>
+
+
+
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+
+
+
+    <!--Menu emergente derecha-->
+    <string name="accion_configurar">Configuración</string>
+    <string name="accion_perfil">Mi Perfil</string>
+    <string name="accion_buscar">Buscar</string>
+    <string name="accion_camara">Capturar Imagen</string>
+    <string name="accion_camaravideo">Capturar Video</string>
+    <string name="accion_carrito">Añadir al carrito</string>
+
+    <!--Menu principal-->
+    <string name="menuitem_1">Partido</string>
+    <!--ventana de partidos-->
+        <string name="titulo_item1">Todo acerca del partido</string>
+        <string name="titulo_item1_tab1">Minuto a Minuto</string>
+        <string name="titulo_item1_tab2">Alineación</string>
+        <string name="titulo_item1_tab3">Estadisticas</string>
+
+    <string name="menuitem_2">Multimedia</string>
+    <!--ventana de multimedia-->
+        <string name="titulo_item2">Multimedia</string>
+        <string name="titulo_item2_tab1">Fotos</string>
+        <string name="titulo_item2_tab2">Videos</string>
+
+    <string name="menuitem_3">Narración</string>
+    <string name="menuitem_4">Chat y foros</string>
+    <string name="menuitem_5">Calendario</string>
+
+    <string name="menuitem_6">Alimentacion y bebidas</string>
+    <!--ventana de alimentacio-->
+        <string name="titulo_item6">Alimentacion y bebidas</string>
+        <string name="titulo_item6_tab1">platillos</string>
+        <string name="titulo_item6_tab2">Bebidas</string>
+        <string name="titulo_item6_tab3">Postres</string>
+
+    <string name="menuitem_7">Info Ciudad</string>
+    <string name="menuitem_8">Salir</string>
+
+
+
+
+</resources>
