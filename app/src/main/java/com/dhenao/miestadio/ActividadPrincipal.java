@@ -1,13 +1,17 @@
 package com.dhenao.miestadio;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -19,9 +23,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TableLayout;
@@ -39,19 +46,30 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
 public class ActividadPrincipal extends AppCompatActivity {
     private DrawerLayout drawerLayout; //del menu principal
 
+    /***para la carga de imagenes***/
+    //public static final String URL = "http://www.thebiblescholar.com/android_awesome.jpg";
+    //de esta pagina por hacer - https://sekthdroid.wordpress.com/2012/12/01/guardar-imagen-en-memoria-interna-android/
+
+    /***para la multimedia, toma de fotos**/
+    private final String ruta_temp = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)+"/";
+    private File filefotos = new File(ruta_temp);
+
     /*** para el refresco de listas*/
     private RecyclerView recycler;
     private ListAdapterMultimedia adapter;
     private RecyclerView.LayoutManager lManager;
     private SwipeRefreshLayout refreshLayout;
-    private static final int CANTIDAD_ITEMS = 8;
 
     /*otros para pruebas*/
     public String tituloPerfil;
@@ -70,51 +88,15 @@ public class ActividadPrincipal extends AppCompatActivity {
     private static final String TAG_TITULO = "titulo";
     private static final String TAG_DETALLE = "detalle";
 
-    ImageView btn[] = new ImageView[2];
-
     // equipos JSONArray
     JSONArray equipos = null;
-    ListView lista;
-
-    public void clickEnImagen(View target) {
-        switch (target.getId()) {
-            case R.id.imagenequipo1:
-                Toast.makeText(getApplicationContext(), "selecciono la imagen del equipo1" , Toast.LENGTH_SHORT).show();
-                ImageView imagen = (ImageView) findViewById(R.id.imagenresultante);
-                imagen.setBackground(target.getBackground());
-                break;
-
-            case R.id.imagenequipo2:
-                Toast.makeText(getApplicationContext(), "selecciono la imagen del equipo2" , Toast.LENGTH_SHORT).show();
-                break;
-
-            case R.id.imagenminiatura:
-                /*Intent i = new Intent(ActividadPrincipal.this, MultiTouchActivity.class );
-                i.putExtra("rutaimagen", target);
-                startActivity(i); */
-
-               //startActivity(new Intent(ActividadPrincipal.this, MultiTouchActivity.class).putExtras(new Bundle().putParcelable("bitmap", target.getDrawingCache())));
-
-                Intent i = new Intent(ActividadPrincipal.this, MultiTouchActivity.class );
-                target.setDrawingCacheEnabled(true);
-                Bitmap imagenpasada = target.getDrawingCache();
-                Bundle b = new Bundle(); //Creo un contenedor Bundle
-                ByteArrayOutputStream bs = new ByteArrayOutputStream(); //Creo un ByteArray y convierto el Bitmap a este formato
-                imagenpasada.compress(Bitmap.CompressFormat.PNG, 50, bs);
-                b.putByteArray("imagen", bs.toByteArray()); //Pongo el ByteArray en el Bundle con el id "nombre"
-                i.putExtras(b); //y lo envío cuando pulse el botón
-                startActivity(i);
-
-                break;
-        }
-        //reciclador = (RecyclerView) findViewById(R.id.reciclador);
-    }
-
+    public ListView lista;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         Log.v("inicio app", "Start");
 
         setContentView(R.layout.menu_deslizante_y_contenido);
@@ -124,6 +106,7 @@ public class ActividadPrincipal extends AppCompatActivity {
 
         TableLayout datosPerfil = (TableLayout) findViewById(R.id.datos_perfil);
         TextView tituloperfil = (TextView) findViewById(R.id.titulo_perfil);
+
         tituloPerfil = tituloperfil.getText().toString();
 
         if (navigationView != null) {
@@ -131,9 +114,6 @@ public class ActividadPrincipal extends AppCompatActivity {
             // Seleccionar item por defecto el que inicia
             seleccionarItem(navigationView.getMenu().getItem(0));
         }
-
-
-
 
 
         /*NO BORRAR funciona... configuracion del boton flotante*/
@@ -147,18 +127,15 @@ public class ActividadPrincipal extends AppCompatActivity {
         });*/
     }
 
-    private boolean verificaConexion(){
-        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-        if (networkInfo != null && networkInfo.isConnected()) {
-             Toast.makeText(this, "con conexion", Toast.LENGTH_SHORT).show();
-            return true;
-        } else {
-            Toast.makeText(this, "sin conexion", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-    }
 
+
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_config0, menu);
+        return true;
+    }
 
 
     @Override
@@ -171,40 +148,32 @@ public class ActividadPrincipal extends AppCompatActivity {
         }
     }
 
-
-
-    private void agregarToolbar() {
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        final ActionBar ab = getSupportActionBar();
-        if (ab != null) {
-            // Poner ícono del drawer toggle
-            ab.setHomeAsUpIndicator(R.drawable.drawer_toggle);
-            ab.setDisplayHomeAsUpEnabled(true);
-        }
+/* para el menu contextual.... no borrar
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_multimediacontext, menu);
     }
-
-
-    private void prepararDrawer(NavigationView navigationView) {
-        navigationView.setNavigationItemSelectedListener(
-                new NavigationView.OnNavigationItemSelectedListener() {
-                    @Override
-                    public boolean onNavigationItemSelected(MenuItem menuItem) {
-                        menuItem.setChecked(true);
-                        seleccionarItem(menuItem);
-                        drawerLayout.closeDrawers();
-                        return true;
-                    }
-                });
-
-    }
-
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_config0, menu);
-        return true;
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        switch (item.getItemId()) {
+            case R.id.mult_tomarfoto:
+                Toast.makeText(getApplicationContext(), "selecciono tomar foto" , Toast.LENGTH_SHORT).show();
+                return true;
+            case R.id.mult_subirfoto:
+                Toast.makeText(getApplicationContext(), "selecciono subir foto" , Toast.LENGTH_SHORT).show();
+                return true;
+            case R.id.mult_cancelarfoto:
+                Toast.makeText(getApplicationContext(), "selecciono cancelar" , Toast.LENGTH_SHORT).show();
+                return true;
+            default:
+                return super.onContextItemSelected(item);
+        }
     }
+*/
 
 
     private void seleccionarItem(MenuItem itemDrawer) {
@@ -256,50 +225,100 @@ public class ActividadPrincipal extends AppCompatActivity {
             case android.R.id.home:
                 drawerLayout.openDrawer(GravityCompat.START);
                 return true;
+
+            case R.id.accion_camara:
+                //Si no existe crea la carpeta donde se guardaran las fotos
+                filefotos.mkdirs();
+                File mi_foto = new File( ruta_temp + "miest" +  tomarFechayhora() + ".jpg" );
+                try {
+                    mi_foto.createNewFile();
+                } catch (IOException ex) {
+                    Log.e("ERROR ", "Error:" + ex);
+                }
+                //
+                Uri uri = Uri.fromFile( mi_foto );
+                //Abre la camara para tomar la foto
+                Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                //Guarda imagen
+                cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+                //Retorna a la actividad
+                startActivityForResult(cameraIntent, 0);
+
+                /*aqui debo coger la foto de la ruta y subirla*/
+
+                return true;
             case R.id.menuconf_configuracion:
                 //startActivity(new Intent(this, ActividadConfiguracion.class));
                 //return true;
+
         }
         return super.onOptionsItemSelected(item);
     }
 
 
+    public void clickEnImagen(View target) {
+        switch (target.getId()) {
+            case R.id.imagenequipo1:
+                ImageView imagene = (ImageView) findViewById(R.id.imagenequipo1);
+                registerForContextMenu(imagene);
 
-    private class HackingBackgroundTask extends AsyncTask<Void, Void, List<DatosMultimedia>> {
+                Toast.makeText(getApplicationContext(), "selecciono la imagen del equipo1" , Toast.LENGTH_SHORT).show();
+                ImageView imagen = (ImageView) findViewById(R.id.imagenresultante);
+                imagen.setBackground(target.getBackground());
+                break;
 
-        static final int DURACION = 3 * 1000; // 3 segundos de carga
+            case R.id.imagenequipo2:
+                Toast.makeText(getApplicationContext(), "selecciono la imagen del equipo2" , Toast.LENGTH_SHORT).show();
+                /*ImageView*/ imagen = (ImageView) findViewById(R.id.imagenresultante);
+                imagen.setBackground(target.getBackground());
+                break;
 
-        @Override
-        protected List<DatosMultimedia> doInBackground(Void... params) {
-            // Simulación de la carga de items
-            try {
-                Thread.sleep(DURACION);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            case R.id.imagenminiatura:
+                /*Intent i = new Intent(ActividadPrincipal.this, MultiTouchActivity.class );
+                i.putExtra("rutaimagen", target);
+                startActivity(i); */
 
-            // Retornar en nuevos elementos para el adaptador
-            return DatosMultimedia.randomList(CANTIDAD_ITEMS);
+                Intent i = new Intent(ActividadPrincipal.this, MultiTouchActivity.class );
+                target.setDrawingCacheEnabled(true);
+                Bitmap imagenpasada = target.getDrawingCache();
+                Bundle b = new Bundle(); //Creo un contenedor Bundle
+                ByteArrayOutputStream bs = new ByteArrayOutputStream(); //Creo un ByteArray y convierto el Bitmap a este formato
+                imagenpasada.compress(Bitmap.CompressFormat.PNG, 50, bs);
+                b.putByteArray("imagen", bs.toByteArray()); //Pongo el ByteArray en el Bundle con el id "nombre"
+                i.putExtras(b); //y lo envío cuando pulse el botón
+                startActivity(i);
+
+                break;
         }
-
-        @Override
-        protected void onPostExecute(List<DatosMultimedia> result) {
-            super.onPostExecute(result);
-
-            // Limpiar elementos antiguos
-            adapter.clear();
-
-            // Añadir elementos nuevos
-            adapter.addAll(result);
-
-            // Parar la animación del indicador
-            refreshLayout.setRefreshing(false);
-        }
-
     }
 
 
 
+    private void agregarToolbar() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        final ActionBar ab = getSupportActionBar();
+        if (ab != null) {
+            // Poner ícono del drawer toggle
+            ab.setHomeAsUpIndicator(R.drawable.drawer_toggle);
+            ab.setDisplayHomeAsUpEnabled(true);
+        }
+    }
+
+
+    private void prepararDrawer(NavigationView navigationView) {
+        navigationView.setNavigationItemSelectedListener(
+                new NavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(MenuItem menuItem) {
+                        menuItem.setChecked(true);
+                        seleccionarItem(menuItem);
+                        drawerLayout.closeDrawers();
+                        return true;
+                    }
+                });
+
+    }
 
 
 
@@ -394,6 +413,27 @@ public class ActividadPrincipal extends AppCompatActivity {
                 }
             });
         }*/
+    }
+
+
+    private boolean verificaConexion(){
+        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected()) {
+            Toast.makeText(this, "con conexion", Toast.LENGTH_SHORT).show();
+            return true;
+        } else {
+            Toast.makeText(this, "sin conexion", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+    }
+
+    //LO USO CUANDO NECESITO UN STRING DE FECHA Y HORA
+    @SuppressLint("SimpleDateFormat")
+    private String tomarFechayhora()
+    {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("ddmmyyyyhhmmss");
+        return dateFormat.format(new Date());
     }
 
 }
