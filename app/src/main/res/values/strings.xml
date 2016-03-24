@@ -4,6 +4,11 @@
     <string name="email">davidhenaou@gmail.com</string>
 
 
+    <!-- informacion de logueo -->
+    <string name="signup_title">Crear Nueva Cuenta</string>
+    <string name="login_label">Loguearse</string>
+
+
     <!--informacion del iten 1-->
     <string name="nombredeequipo1">Medellín</string>
     <string name="nombredeequipo2">Nacional</string>
