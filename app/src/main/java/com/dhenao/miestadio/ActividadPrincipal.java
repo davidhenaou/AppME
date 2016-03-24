@@ -5,41 +5,36 @@ import android.accounts.AccountAuthenticatorResponse;
 import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.ActionBar;
-import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.ContextMenu;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.dhenao.miestadio.data.DatosMultimedia;
 import com.dhenao.miestadio.data.JSONParser;
 import com.dhenao.miestadio.data.ListAdapterMultimedia;
 import com.dhenao.miestadio.ui.CargaContenido;
@@ -49,6 +44,7 @@ import com.dhenao.miestadio.ui.MultiTouchActivity;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -57,6 +53,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+
+//import com.dhenao.miestadio.system.sync.Autenticacion;
 
 public class ActividadPrincipal extends AppCompatActivity {
     private DrawerLayout drawerLayout; //del menu principal
@@ -217,6 +215,11 @@ public class ActividadPrincipal extends AppCompatActivity {
                     finish();
                 }
 
+
+                break;
+            case R.id.nav_4:
+                //Intent in = new Intent(this, Autenticacion.class );
+                //startActivity(in);
 
 
                 break;
