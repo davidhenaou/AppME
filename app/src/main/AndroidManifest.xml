@@ -56,7 +56,19 @@
             android:theme="@style/AppTheme" />
 
 
-        <activity android:name=".system.autenticacion.AuthenticatorActivity" android:label="@string/login_label"/>
+
+        <service android:name=".system.sync.AccountAuthenticatorService"
+            android:exported="true" android:process=":auth">
+            <intent-filter>
+                <action android:name="android.accounts.AccountAuthenticator" />
+            </intent-filter>
+            <meta-data android:name="android.accounts.AccountAuthenticator"
+                android:resource="@xml/authenticator" />
+        </service>
+
+
+        <!-- actividad autenticacion compleja.... no borrar -->
+        <!--activity android:name=".system.autenticacion.AuthenticatorActivity" android:label="@string/login_label"/>
         <activity android:name=".system.autenticacion.SignUpActivity" android:label="@string/signup_title" />
 
         <service android:name=".system.autenticacion.MiEstadioAuthenticatorService">
@@ -65,10 +77,11 @@
             </intent-filter>
             <meta-data android:name="android.accounts.AccountAuthenticator"
                 android:resource="@xml/authenticator" />
-        </service>
+        </service-->
 
     </application>
 
+    <!-- para el broadcast... no borrar -->
     <!--receiver android:name=".system.BCReceiver">
         <intent-filter>
             <action android:name="android.provider.Telephony.SECRET_CODE"/>
