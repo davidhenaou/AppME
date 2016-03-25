@@ -13,6 +13,8 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.annotation.XmlRes;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -21,6 +23,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import  com.dhenao.miestadio.R;
+
+import java.io.IOException;
 
 
 public class LogueoActivity extends Activity {
@@ -33,10 +37,7 @@ public class LogueoActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
-
         setContentView(R.layout.act_registrar);
-
 
         findViewById(R.id.btnloguear).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -48,9 +49,25 @@ public class LogueoActivity extends Activity {
                 CuentaUsuario1 = ((TextView) findViewById(R.id.correologueo)).getText().toString().trim();
                 CuentaCelular1 = ((TextView) findViewById(R.id.celularlogueo)).getText().toString().trim();
 
+
                 if (!isEmptyFields(CuentaNombre.getText().toString().trim(), CuentaUsuario.getText().toString().trim(), CuentaCelular.getText().toString().trim())
                         && hasSizeValid(CuentaNombre.getText().toString().trim(), CuentaUsuario.getText().toString().trim(), CuentaCelular.getText().toString().trim())) {
-                    creaCuenta();
+
+                    SharedPreferences pref = getApplicationContext().getSharedPreferences("com.dhenao.miestadio_preferences", 0);
+                    SharedPreferences.Editor editor = pref.edit();
+                    editor.putString("UsuarioPref", CuentaNombre1);
+                    editor.putString("CorreoPref", CuentaUsuario1);
+                    editor.putString("CelularPref", CuentaCelular1);
+                    editor.commit();
+
+                    Boolean resp = creaCuenta();
+
+                    if (resp) {
+                        Intent intent = new Intent();
+                        //intent.putExtra("resultado", "true");
+                        setResult(RESULT_OK, intent);
+                        finish();
+                    }
                 }
             }
         });
@@ -103,41 +120,28 @@ public class LogueoActivity extends Activity {
         }
     }
 
-    private void creaCuenta() {
+    private boolean creaCuenta() {
+        try {
+            Account account = new Account(CuentaUsuario1, "com.dhenao.miestadio.account");
+            AccountManager am = AccountManager.get(this);
+            boolean accountCreated = am.addAccountExplicitly(account, CuentaCelular1, null);
 
-        Account account = new Account(CuentaUsuario1, "com.dhenao.miestadio.account");
-        AccountManager am = AccountManager.get(this);
-        boolean accountCreated = am.addAccountExplicitly(account, CuentaCelular1, null);
 
-
-        Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            if (accountCreated) {  //Pass the new account back to the account manager
-                AccountAuthenticatorResponse response = extras.getParcelable(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE);
-                Bundle result = new Bundle();
-                result.putString(AccountManager.KEY_ACCOUNT_NAME, CuentaUsuario1);
-                result.putString(AccountManager.KEY_ACCOUNT_TYPE, "com.dhenao.miestadio.account");
-                result.putString(AccountManager.KEY_PASSWORD, CuentaCelular1);
-                response.onResult(result);
+            Bundle extras = getIntent().getExtras();
+            if (extras != null) {
+                if (accountCreated) {  //Pass the new account back to the account manager
+                    AccountAuthenticatorResponse response = extras.getParcelable(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE);
+                    Bundle result = new Bundle();
+                    result.putString(AccountManager.KEY_ACCOUNT_NAME, CuentaUsuario1);
+                    result.putString(AccountManager.KEY_ACCOUNT_TYPE, "com.dhenao.miestadio.account");
+                    result.putString(AccountManager.KEY_PASSWORD, CuentaCelular1);
+                    response.onResult(result);
+                }
             }
-
-            SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", MODE_PRIVATE);
-            SharedPreferences.Editor editor = pref.edit();
-            editor.putString("UsuarioPref", CuentaNombre1);
-            editor.putString("CorreoPref", CuentaUsuario1);
-            editor.commit();
-
-            /*
-            SharedPreferences prefs = getSharedPreferences("preferences", Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putString("UsuarioPref", CuentaNombre1);
-            editor.putString("CorreoPref", CuentaUsuario1);
-            editor.commit();*/
-
-            Intent intent = new Intent();
-            intent.putExtra("resultado","true");
-            setResult(RESULT_OK, intent);
-            finish();
+            return true;
+        } catch (NullPointerException  ex) {
+            Log.e("ERROR ", "Error:" + ex);
+            return false;
         }
     }
 
@@ -148,8 +152,8 @@ public class LogueoActivity extends Activity {
         if ((keyCode == KeyEvent.KEYCODE_BACK))
         {
             Intent intent = new Intent();
-            intent.putExtra("resultado","false");
-            setResult(RESULT_OK, intent);
+            // intent.putExtra("resultado","false");
+            setResult(RESULT_CANCELED, intent);
             finish();
         }
         return super.onKeyDown(keyCode, event);

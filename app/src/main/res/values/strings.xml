@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">Mi Estadio</string>
     <string name="usuario">David Henao</string>
-    <string name="email">davidhenaou@gmail.com</string>
-
+    <string name="correo">davidhenaou@gmail.com</string>
+    <string name="celular">3117480869</string>
 
     <!-- informacion de logueo -->
     <string name="signup_title">Crear Nueva Cuenta</string>

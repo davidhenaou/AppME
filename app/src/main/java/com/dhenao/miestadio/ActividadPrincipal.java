@@ -26,10 +26,12 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TableLayout;
@@ -76,8 +78,10 @@ public class ActividadPrincipal extends AppCompatActivity {
     private RecyclerView.LayoutManager lManager;
     private SwipeRefreshLayout refreshLayout;
 
-    /*otros para pruebas*/
-    public String tituloPerfil;
+    /*para el nombre del perfil y los datos de el*/
+    public String UsuarioPerfil;
+    public String CorreoPerfil;
+    public String CelularPerfil;
 
     /*para el webservice*/
     // Progress Dialog
@@ -104,19 +108,11 @@ public class ActividadPrincipal extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         Log.v("inicio app", "Start");
 
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(ActividadPrincipal.this);
-        Toast.makeText(getApplicationContext(),  pref.getString("UsuarioPref","") , Toast.LENGTH_SHORT).show();
-        Toast.makeText(getApplicationContext(),  pref.getString("CorreoPref","") , Toast.LENGTH_SHORT).show();
 
-        setContentView(R.layout.menu_deslizante_y_contenido);
-        agregarToolbar();
+
+        setContentView(R.layout.menu_deslizante_y_contenido); agregarToolbar();
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout); //menu deslizante
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-
-        TableLayout datosPerfil = (TableLayout) findViewById(R.id.datos_perfil);
-        TextView tituloperfil = (TextView) findViewById(R.id.titulo_perfil);
-
-        tituloPerfil = tituloperfil.getText().toString();
 
         if (navigationView != null) {
             prepararDrawer(navigationView);
@@ -124,7 +120,11 @@ public class ActividadPrincipal extends AppCompatActivity {
             seleccionarItem(navigationView.getMenu().getItem(0));
         }
 
-
+        CargarPerfil();
+        if ( TextUtils.isEmpty(UsuarioPerfil) || TextUtils.isEmpty(CorreoPerfil) || TextUtils.isEmpty(CelularPerfil)) {
+            Intent intent = new Intent(this, LogueoActivity.class);
+            startActivityForResult(intent, 1234);
+        }
         /*NO BORRAR funciona... configuracion del boton flotante*/
         /*FloatingActionButton botonflotante = (FloatingActionButton) findViewById(R.id.botonflotante);
         botonflotante.setOnClickListener(new View.OnClickListener() {
@@ -137,6 +137,20 @@ public class ActividadPrincipal extends AppCompatActivity {
     }
 
 
+    public void CargarPerfil(){
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(ActividadPrincipal.this);
+        UsuarioPerfil = pref.getString("UsuarioPref","").trim();
+        CorreoPerfil  = pref.getString("CorreoPref","").trim();
+        CelularPerfil = pref.getString("CelularPref","").trim();
+
+        TextView edtUsuarioPerfil = (TextView) findViewById(R.id.perfil_usuario);
+        TextView edtCorreoPerfil = (TextView) findViewById(R.id.perfil_correo);
+        TextView edtCelularPerfil = (TextView) findViewById(R.id.perfil_celular);
+
+        edtUsuarioPerfil.setText(UsuarioPerfil);
+        edtCorreoPerfil.setText(CorreoPerfil);
+        edtCelularPerfil.setText(CelularPerfil);
+    }
 
 
 
@@ -161,8 +175,7 @@ public class ActividadPrincipal extends AppCompatActivity {
     @Override
     protected void onActivityResult (int requestCode, int resultCode, Intent data){
         if (requestCode==1234) {
-            if (!data.getExtras().getBoolean("resultado")){
-
+            if (resultCode == RESULT_CANCELED){
                 AlertDialog.Builder dialogo1 = new AlertDialog.Builder(this);
                 dialogo1.setTitle("Salir de Mi Estadio");
                 dialogo1.setMessage("¿ Desea salir de Mi Estadio ?");
@@ -180,6 +193,7 @@ public class ActividadPrincipal extends AppCompatActivity {
                 });
                 dialogo1.show();
             }
+            CargarPerfil();
         }
     }
 
@@ -231,8 +245,7 @@ public class ActividadPrincipal extends AppCompatActivity {
 
                 break;
             case R.id.nav_4:
-                Intent intent = new Intent(this, LogueoActivity.class);
-                startActivityForResult(intent, 1234);
+
                 /*
                 Intent in = new Intent(this, LogueoActivity.class );
                 startActivity(in);

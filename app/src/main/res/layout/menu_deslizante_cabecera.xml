@@ -10,75 +10,73 @@
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
 
-    <TableLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center_horizontal"
-        android:layout_marginTop="15dp">
+        android:layout_height="100dp"
+        android:layout_marginTop="15dp"
+        android:background="@drawable/fotoestadio"
+        android:orientation="horizontal"
+        android:gravity="center"
+        >
 
         <ImageView
-            android:id="@+id/imageView3"
-            android:layout_width="@dimen/ancho_logo"
-            android:layout_height="@dimen/alto_logo"
-            android:src="@drawable/fotoestadio" />
-    </TableLayout>
+            android:id="@+id/icono_miperfil"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:src="@mipmap/ic_launcher" />
 
-
-    <TableLayout
-        android:id="@+id/datos_perfil"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:columnCount="3"
-        android:orientation="vertical"
-        android:rowCount="2">
-
-        <TableRow
+        <TableLayout
+            android:id="@+id/datos_perfil"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content"
+            android:columnCount="1"
+            android:rowCount="3">
 
-            <ImageView
-                android:id="@+id/icono_miperfil"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="8dp"
-                android:src="@drawable/cuenta" />
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <TextView
+                    android:id="@+id/perfil_usuario"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/usuario"
+                    android:textColor="@color/icons"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                    android:textStyle="bold"
+                    android:layout_column="1" />
+            </TableRow>
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <TextView
+                    android:id="@+id/perfil_correo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_column="1"
+                    android:layout_gravity="center_vertical"
+                    android:text="@string/correo"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                    android:textStyle="bold" />
+            </TableRow>
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <TextView
+                    android:id="@+id/perfil_celular"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_column="1"
+                    android:layout_gravity="center_vertical"
+                    android:text="@string/celular"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                    android:textStyle="bold" />
+            </TableRow>
 
-            <TextView
-                android:id="@+id/nombreusuario"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:text="@string/usuario"
-                android:textColor="@color/icons"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                android:textStyle="bold" />
+        </TableLayout>
+    </LinearLayout>
 
-            <TextView
-                android:id="@+id/titulo_perfil"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:text="@string/accion_perfil"
-                android:visibility="invisible"
-                android:textStyle="bold" />
 
-        </TableRow>
 
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <TextView
-                android:id="@+id/texto_total_carrito"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_column="1"
-                android:layout_gravity="center_vertical"
-                android:text="@string/email"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                android:textStyle="bold" />
-        </TableRow>
-
-    </TableLayout>
 </LinearLayout>
