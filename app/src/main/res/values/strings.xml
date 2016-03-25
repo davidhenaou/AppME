@@ -7,7 +7,6 @@
     <!-- informacion de logueo -->
     <string name="signup_title">Crear Nueva Cuenta</string>
     <string name="login_label">Loguearse</string>
-    <string name="ACCOUNT_TYPE">com.dhenao.miestadio.account</string>
 
 
     <!--informacion del iten 1-->

@@ -8,11 +8,28 @@
         android:icon="@drawable/camara"
         android:orderInCategory="1"
         android:title="@string/accion_camara"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="ifRoom" >
+
+        <menu>
+            <item android:id="@+id/mult_tomarfoto" android:icon="@drawable/camaraoscura" android:title="Tomar foto"  />
+            <item android:id="@+id/mult_subirfoto" android:icon="@drawable/archivooscuro" android:title="Subir foto" />
+            <item android:title="Cancelar" />
+        </menu>
+
+    </item>
     <item
         android:id="@+id/accion_camaravideo"
         android:icon="@drawable/camaravideo"
         android:orderInCategory="2"
         android:title="@string/accion_camaravideo"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="ifRoom">
+
+        <menu>
+            <item android:id="@+id/mult_tomarvideo" android:icon="@drawable/camaravideooscura" android:title="Tomar Video"  />
+            <item android:id="@+id/mult_subirvideo" android:icon="@drawable/archivooscuro"  android:title="Subir Video" />
+            <item android:title="Cancelar" />
+        </menu>
+
+
+    </item>
 </menu>

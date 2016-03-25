@@ -3,5 +3,5 @@
     android:accountType="com.dhenao.miestadio.account"
     android:icon="@mipmap/ic_launcher"
     android:smallIcon="@mipmap/ic_launcher"
-    android:label="@string/app_name"
-    android:accountPreferences="@xml/preferenciasservicioaut"/>
+    android:label="@string/app_name"/>
+    <!--android:accountPreferences="@xml/preferenciasservicioaut"-->

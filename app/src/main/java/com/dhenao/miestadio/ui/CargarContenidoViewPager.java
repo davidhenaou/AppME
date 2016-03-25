@@ -84,6 +84,10 @@ public class CargarContenidoViewPager extends Fragment{
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         int compMenu = getArguments().getInt("compMenu");
+        if (compMenu>=100) {
+            inflater.inflate(R.menu.menu_config100, menu);
+            compMenu = compMenu - 100;
+        }
         if (compMenu==1 || compMenu==3 || compMenu==5 || compMenu==7){
             inflater.inflate(R.menu.menu_buscar1, menu);
         }
@@ -93,6 +97,7 @@ public class CargarContenidoViewPager extends Fragment{
         if (compMenu==4 || compMenu==5 || compMenu==6 || compMenu==7) {
             inflater.inflate(R.menu.menu_multimedia4, menu);
         }
+
     }
 
     @Override

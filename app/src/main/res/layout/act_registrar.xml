@@ -3,54 +3,57 @@
     android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="#000000"
     android:paddingLeft="17dp"
     android:paddingRight="17dp"
+    android:gravity="center"
     >
 
-    <EditText
-        android:id="@+id/name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:hint="Name"
-        android:inputType="text"
-        android:padding="10dp"
-        />
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="150dp"
+        android:layout_gravity="center_horizontal"
+        android:background="@drawable/logomiestadio"
+        android:layout_marginTop="20dp"/>
 
     <EditText
-        android:id="@+id/accountName"
+        android:id="@+id/usuariologueo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textPersonName"
+        android:hint="Nombre o Apodo"
+        android:ems="10"
+        android:padding="10dp"/>
+
+
+    <EditText
+        android:id="@+id/correologueo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:hint="Email address"
+        android:hint="Correo Electronico"
         android:inputType="textEmailAddress"
         android:padding="10dp"
         />
 
+
     <EditText
-        android:id="@+id/accountPassword"
+        android:id="@+id/celularlogueo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:inputType="textPassword"
-        android:hint="Password"
+        android:hint="Numero Celular"
+        android:inputType="number"
         android:padding="10dp"
+        android:ems="10"
         />
 
+
     <Button
-        android:id="@+id/submit"
+        android:id="@+id/btnloguear"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:text="Create Account"
+        android:text="Crear usuario Mi Estadio"
         android:padding="10dp"/>
 
-    <TextView android:id="@+id/alreadyMember"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:padding="5dp"
-        android:gravity="center"
-        android:text="Already a member?"/>
 </LinearLayout>

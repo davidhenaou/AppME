@@ -10,15 +10,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.util.Log;
 
 import com.dhenao.miestadio.ActividadPrincipal;
 
-public class AccountAuthenticatorService extends Service {
-    private static final String TAG = "AccountAuthenticatorService";
+public class ServicioCuentaSinc extends Service {
+    private static final String TAG = "ServicioCuentaSinc";
     private static AccountAuthenticatorImpl sAccountAuthenticator = null;
 
-    public AccountAuthenticatorService() {
+    public ServicioCuentaSinc() {
         super();
     }
 
@@ -52,7 +51,7 @@ public class AccountAuthenticatorService extends Service {
                 throws NetworkErrorException {
             Bundle reply = new Bundle();
 
-            Intent i = new Intent(mContext,ActividadPrincipal.class);
+            Intent i = new Intent(mContext, ActividadPrincipal.class);
             i.setAction("fm.last.android.sync.LOGIN");
             i.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response);
             reply.putParcelable(AccountManager.KEY_INTENT, i);

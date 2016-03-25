@@ -1,12 +1,12 @@
 package com.dhenao.miestadio;
 
-import android.accounts.Account;
-import android.accounts.AccountAuthenticatorResponse;
-import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -37,6 +38,8 @@ import android.widget.Toast;
 
 import com.dhenao.miestadio.data.JSONParser;
 import com.dhenao.miestadio.data.ListAdapterMultimedia;
+import com.dhenao.miestadio.system.ActividadConfiguracion;
+import com.dhenao.miestadio.system.autenticacion.LogueoActivity;
 import com.dhenao.miestadio.ui.CargaContenido;
 import com.dhenao.miestadio.ui.CargarContenidoViewPager;
 import com.dhenao.miestadio.ui.MultiTouchActivity;
@@ -99,8 +102,11 @@ public class ActividadPrincipal extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         Log.v("inicio app", "Start");
+
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(ActividadPrincipal.this);
+        Toast.makeText(getApplicationContext(),  pref.getString("UsuarioPref","") , Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(),  pref.getString("CorreoPref","") , Toast.LENGTH_SHORT).show();
 
         setContentView(R.layout.menu_deslizante_y_contenido);
         agregarToolbar();
@@ -136,7 +142,7 @@ public class ActividadPrincipal extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_config0, menu);
+        getMenuInflater().inflate(R.menu.menu_basico0, menu);
         return true;
     }
 
@@ -148,6 +154,32 @@ public class ActividadPrincipal extends AppCompatActivity {
             drawer.closeDrawer(GravityCompat.START);
         } else {
             super.onBackPressed();
+        }
+    }
+
+
+    @Override
+    protected void onActivityResult (int requestCode, int resultCode, Intent data){
+        if (requestCode==1234) {
+            if (!data.getExtras().getBoolean("resultado")){
+
+                AlertDialog.Builder dialogo1 = new AlertDialog.Builder(this);
+                dialogo1.setTitle("Salir de Mi Estadio");
+                dialogo1.setMessage("¿ Desea salir de Mi Estadio ?");
+                dialogo1.setCancelable(false);
+                dialogo1.setPositiveButton("Confirmar", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialogo1, int id) {
+                        finish();
+                    }
+                });
+                dialogo1.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialogo1, int id) {
+                        Intent intent = new Intent(getApplicationContext(), LogueoActivity.class);
+                        startActivityForResult(intent, 1234);
+                    }
+                });
+                dialogo1.show();
+            }
         }
     }
 
@@ -190,41 +222,27 @@ public class ActividadPrincipal extends AppCompatActivity {
 
         switch (itemDrawer.getItemId()) { //FragmentoMultimedia();
             case R.id.nav_1:
-                fragmentoGenerico = CargarContenidoViewPager.nuevaInstancia(1, 1);
+                fragmentoGenerico = CargarContenidoViewPager.nuevaInstancia(1, 101);
                 break;
             case R.id.nav_2:
                 fragmentoGenerico = CargarContenidoViewPager.nuevaInstancia(2, 4);
                 break;
             case R.id.nav_3:
-                String username = "david";
-                String password = "324126";
-
-                Account account = new Account(username, getString(R.string.ACCOUNT_TYPE));
-                AccountManager am = AccountManager.get(this);
-                boolean accountCreated = am.addAccountExplicitly(account, password, null);
-
-                Bundle extras = getIntent().getExtras();
-                if (extras != null) {
-                    if (accountCreated) {  //Pass the new account back to the account manager
-                        AccountAuthenticatorResponse response = extras.getParcelable(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE);
-                        Bundle result = new Bundle();
-                        result.putString(AccountManager.KEY_ACCOUNT_NAME, username);
-                        result.putString(AccountManager.KEY_ACCOUNT_TYPE, getString(R.string.ACCOUNT_TYPE));
-                        response.onResult(result);
-                    }
-                    finish();
-                }
-
 
                 break;
             case R.id.nav_4:
-                //Intent in = new Intent(this, Autenticacion.class );
-                //startActivity(in);
+                Intent intent = new Intent(this, LogueoActivity.class);
+                startActivityForResult(intent, 1234);
+                /*
+                Intent in = new Intent(this, LogueoActivity.class );
+                startActivity(in);
+                finish();
+                */
 
 
                 break;
             case R.id.nav_5:
-                new CargarLosEquipos().execute();
+
                 break;
             case R.id.nav_6:
                 boolean conex = verificaConexion();
@@ -240,6 +258,9 @@ public class ActividadPrincipal extends AppCompatActivity {
                 finish();
                 break;
         }
+        /* consulta para llamar los equipos
+        new CargarLosEquipos().execute();
+        */
         //fragmentoGenerico = FragmentoPestanas.nuevaInstancia(1,1);
 
         if (fragmentoGenerico != null) {
@@ -257,7 +278,7 @@ public class ActividadPrincipal extends AppCompatActivity {
                 drawerLayout.openDrawer(GravityCompat.START);
                 return true;
 
-            case R.id.accion_camara:
+            case R.id.mult_tomarfoto:
                 //Si no existe crea la carpeta donde se guardaran las fotos
                 filefotos.mkdirs();
                 File mi_foto = new File( ruta_temp + "miest" +  tomarFechayhora() + ".jpg" );
@@ -279,8 +300,8 @@ public class ActividadPrincipal extends AppCompatActivity {
 
                 return true;
             case R.id.menuconf_configuracion:
-                //startActivity(new Intent(this, ActividadConfiguracion.class));
-                //return true;
+                startActivity(new Intent(this, ActividadConfiguracion.class));
+                return true;
 
         }
         return super.onOptionsItemSelected(item);

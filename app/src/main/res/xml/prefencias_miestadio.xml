@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="Informacion de perfil">
+
+        <EditTextPreference
+            android:key="UsuarioPref"
+            android:title="Nombre o Apodo"
+            android:summary="Este aparecera en la comunidad">
+        </EditTextPreference>
+
+        <EditTextPreference
+            android:key="CorreoPref"
+            android:title="Correo Electronico"
+            android:summary="Este es el correo electronico">
+        </EditTextPreference>
+
+        <CheckBoxPreference
+            android:key="opcion1"
+            android:title="Preferencia 1"
+            android:summary="Descripción de la preferencia 1" />
+
+        <EditTextPreference
+            android:key="opcion2"
+            android:title="Preferencia 2"
+            android:summary="Descripción de la preferencia 2"
+            android:dialogTitle="Introduce valor" />
+
+        <ListPreference
+            android:key="numArticulos"
+            android:title="colores"
+            android:defaultValue="6"
+            android:entries="@array/colores"
+            android:entryValues="@array/codigoColor"
+            android:summary="el resumen" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Categoría 2">
+        <ListPreference
+            android:key="opcion3"
+            android:title="Preferencia 3"
+            android:summary="Descripción de la preferencia 3"
+            android:dialogTitle="Indicar Pais"
+            android:entries="@array/colores"
+            android:entryValues="@array/codigoColor" />
+    </PreferenceCategory>
+</PreferenceScreen>
