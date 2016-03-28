@@ -194,7 +194,7 @@ public class ActividadPrincipal extends AppCompatActivity {
         UsuarioPerfil = pref.getString("UsuarioPref", "").trim();
         CorreoPerfil = pref.getString("CorreoPref", "").trim();
         CelularPerfil = pref.getString("CelularPref", "").trim();
-        String rutaImagenperf = pref.getString("ImagenPerf", "@mipmap/ic_launcher").trim();
+        String rutaImagenperf = pref.getString("ImagenPerf", "").trim();
 
         TextView edtUsuarioPerfil = (TextView) findViewById(R.id.perfil_usuario);
         TextView edtCorreoPerfil = (TextView) findViewById(R.id.perfil_correo);
@@ -204,19 +204,15 @@ public class ActividadPrincipal extends AppCompatActivity {
         edtUsuarioPerfil.setText(UsuarioPerfil);
         edtCorreoPerfil.setText(CorreoPerfil);
         edtCelularPerfil.setText(CelularPerfil);
-
-        File imgFile = new  File(rutaImagenperf);
-        imagenPerfil.setImageURI(Uri.fromFile(imgFile));
-/*
-        InputStream is = getClass().getResourceAsStream(rutaImagenperf);
-        imagenPerfil.setImageDrawable(Drawable.createFromStream(is, ""));
-
-        imgFile = new File(rutaImagenperf);
-        Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-        imagenPerfil.setImageBitmap(myBitmap);
-*/
+        if (!TextUtils.isEmpty(rutaImagenperf)){
+            //File imgFile = new File(rutaImagenperf);
+            //imagenPerfil.setImageURI(Uri.fromFile(imgFile));
+            //imagenPerfil.invalidate();
+            File imgFile = new File(rutaImagenperf);
+            Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+            imagenPerfil.setImageBitmap(myBitmap);
+        }
     }
-
 
 
     @Override
@@ -282,17 +278,40 @@ public class ActividadPrincipal extends AppCompatActivity {
 
             case 110: //imagen de perfil
                 if(resultCode == RESULT_OK) {
-                    String dir = ruta_temp + "miestadioperfil.jpg";
-                    Bitmap imagentemp = BitmapFactory.decodeFile(dir);
-                    String rutaimagen = guardarImagenRutaApp(getApplicationContext(), "imagenperfil", imagentemp);
+                    try {
+                        String dir = ruta_temp + "miestadioperfil.jpg";
+                        Bitmap imagentemp = BitmapFactory.decodeFile(dir);
 
-                    SharedPreferences pref = getApplicationContext().getSharedPreferences("com.dhenao.miestadio_preferences", 0);
-                    SharedPreferences.Editor editor = pref.edit();
-                    editor.putString("ImagenPerf", rutaimagen);
-                    editor.commit();
+                        /*rotar la imagen*/
+                        ExifInterface exif = new ExifInterface(fileFotoCaptura.getAbsolutePath());
+                        int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+                        int rotate = 0;
+                        switch (orientation) {
+                            case ExifInterface.ORIENTATION_ROTATE_270:
+                                rotate = 270;
+                                break;
+                            case ExifInterface.ORIENTATION_ROTATE_180:
+                                rotate = 180;
+                                break;
+                            case ExifInterface.ORIENTATION_ROTATE_90:
+                                rotate = 90;
+                                break;
+                        }
+                        Matrix matrix=new Matrix();
+                        matrix.postRotate(rotate);
+                        imagentemp = Bitmap.createBitmap(imagentemp , 0, 0, imagentemp.getWidth(), imagentemp.getHeight(), matrix, true);
+                        /*fin de rotar la imagen*/
 
-                    CargarPerfil();
-                    Toast.makeText(getApplicationContext(), rutaimagen, Toast.LENGTH_LONG).show();
+                        String rutaimagen = guardarImagenRutaApp(getApplicationContext(), "imagenperfil", imagentemp);
+                        SharedPreferences pref = getApplicationContext().getSharedPreferences("com.dhenao.miestadio_preferences", 0);
+                        SharedPreferences.Editor editor = pref.edit();
+                        editor.putString("ImagenPerf", rutaimagen);
+                        editor.commit();
+                        CargarPerfil();
+                        //Toast.makeText(getApplicationContext(), rutaimagen, Toast.LENGTH_LONG).show();
+                    } catch (Exception e){
+                        Log.e("ERROR ", "Error:" + e);
+                    }
                 }
                 break;
 
