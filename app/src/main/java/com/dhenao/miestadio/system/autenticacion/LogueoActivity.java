@@ -3,6 +3,7 @@ package com.dhenao.miestadio.system.autenticacion;
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorResponse;
 import android.accounts.AccountManager;
+import android.accounts.AccountManagerFuture;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -25,6 +26,7 @@ import android.widget.Toast;
 import  com.dhenao.miestadio.R;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 
 public class LogueoActivity extends Activity {
@@ -122,11 +124,11 @@ public class LogueoActivity extends Activity {
 
     private boolean creaCuenta() {
         try {
+            eliminarCuenta();
+
             Account account = new Account(CuentaUsuario1, "com.dhenao.miestadio.account");
             AccountManager am = AccountManager.get(this);
             boolean accountCreated = am.addAccountExplicitly(account, CuentaCelular1, null);
-
-
             Bundle extras = getIntent().getExtras();
             if (extras != null) {
                 if (accountCreated) {  //Pass the new account back to the account manager
@@ -142,6 +144,14 @@ public class LogueoActivity extends Activity {
         } catch (NullPointerException  ex) {
             Log.e("ERROR ", "Error:" + ex);
             return false;
+        }
+    }
+
+    private void eliminarCuenta(){
+        final AccountManager accountManager = AccountManager.get(this);
+        final Account[] availableAccounts = accountManager.getAccountsByType("com.dhenao.miestadio.account");
+        for (final Account availableAccount : availableAccounts) {
+            final AccountManagerFuture<Boolean> booleanAccountManagerFuture = accountManager.removeAccount(availableAccount, null, null);
         }
     }
 

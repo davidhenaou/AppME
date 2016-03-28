@@ -3,14 +3,23 @@ package com.dhenao.miestadio;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.ContentResolver;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.media.ExifInterface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -31,9 +40,11 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -41,7 +52,9 @@ import android.widget.Toast;
 import com.dhenao.miestadio.data.JSONParser;
 import com.dhenao.miestadio.data.ListAdapterMultimedia;
 import com.dhenao.miestadio.system.ActividadConfiguracion;
+import com.dhenao.miestadio.system.Config;
 import com.dhenao.miestadio.system.autenticacion.LogueoActivity;
+import com.dhenao.miestadio.system.sync.UploadActivity;
 import com.dhenao.miestadio.ui.CargaContenido;
 import com.dhenao.miestadio.ui.CargarContenidoViewPager;
 import com.dhenao.miestadio.ui.MultiTouchActivity;
@@ -51,13 +64,24 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.SocketException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 //import com.dhenao.miestadio.system.sync.Autenticacion;
 
@@ -65,12 +89,20 @@ public class ActividadPrincipal extends AppCompatActivity {
     private DrawerLayout drawerLayout; //del menu principal
 
     /***para la carga de imagenes***/
-    //public static final String URL = "http://www.thebiblescholar.com/android_awesome.jpg";
-    //de esta pagina por hacer - https://sekthdroid.wordpress.com/2012/12/01/guardar-imagen-en-memoria-interna-android/
+    // LogCat tag
+    private static final String TAG = ActividadPrincipal.class.getSimpleName();
+    // Camera activity request codes
+    private static final int CAMERA_CAPTURE_IMAGE_REQUEST_CODE = 100;
+    private static final int CAMERA_CAPTURE_VIDEO_REQUEST_CODE = 200;
+    public static final int MEDIA_TYPE_IMAGE = 1;
+    public static final int MEDIA_TYPE_VIDEO = 2;
+    private Uri fileUri; // file url to store image/video
 
     /***para la multimedia, toma de fotos**/
-    private final String ruta_temp = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)+"/";
-    private File filefotos = new File(ruta_temp);
+    public final String ruta_temp = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)+"/";
+    public File rutafotos = new File(ruta_temp);
+    public File fileFotoCaptura;
+    public Uri uriCaptura;
 
     /*** para el refresco de listas*/
     private RecyclerView recycler;
@@ -108,8 +140,6 @@ public class ActividadPrincipal extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         Log.v("inicio app", "Start");
 
-
-
         setContentView(R.layout.menu_deslizante_y_contenido); agregarToolbar();
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout); //menu deslizante
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -137,19 +167,32 @@ public class ActividadPrincipal extends AppCompatActivity {
     }
 
 
-    public void CargarPerfil(){
+    public void CargarPerfil() {
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(ActividadPrincipal.this);
-        UsuarioPerfil = pref.getString("UsuarioPref","").trim();
-        CorreoPerfil  = pref.getString("CorreoPref","").trim();
-        CelularPerfil = pref.getString("CelularPref","").trim();
+        UsuarioPerfil = pref.getString("UsuarioPref", "").trim();
+        CorreoPerfil = pref.getString("CorreoPref", "").trim();
+        CelularPerfil = pref.getString("CelularPref", "").trim();
+        String rutaImagenperf = pref.getString("ImagenPerf", "@mipmap/ic_launcher").trim();
 
         TextView edtUsuarioPerfil = (TextView) findViewById(R.id.perfil_usuario);
         TextView edtCorreoPerfil = (TextView) findViewById(R.id.perfil_correo);
         TextView edtCelularPerfil = (TextView) findViewById(R.id.perfil_celular);
+        ImageView imagenPerfil = (ImageView) findViewById(R.id.icono_miperfil);
 
         edtUsuarioPerfil.setText(UsuarioPerfil);
         edtCorreoPerfil.setText(CorreoPerfil);
         edtCelularPerfil.setText(CelularPerfil);
+
+        File imgFile = new  File(rutaImagenperf);
+        imagenPerfil.setImageURI(Uri.fromFile(imgFile));
+/*
+        InputStream is = getClass().getResourceAsStream(rutaImagenperf);
+        imagenPerfil.setImageDrawable(Drawable.createFromStream(is, ""));
+
+        imgFile = new File(rutaImagenperf);
+        Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+        imagenPerfil.setImageBitmap(myBitmap);
+*/
     }
 
 
@@ -172,29 +215,95 @@ public class ActividadPrincipal extends AppCompatActivity {
     }
 
 
+
+
     @Override
     protected void onActivityResult (int requestCode, int resultCode, Intent data){
-        if (requestCode==1234) {
-            if (resultCode == RESULT_CANCELED){
-                AlertDialog.Builder dialogo1 = new AlertDialog.Builder(this);
-                dialogo1.setTitle("Salir de Mi Estadio");
-                dialogo1.setMessage("¿ Desea salir de Mi Estadio ?");
-                dialogo1.setCancelable(false);
-                dialogo1.setPositiveButton("Confirmar", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialogo1, int id) {
-                        finish();
+        switch (requestCode) {
+            case CAMERA_CAPTURE_IMAGE_REQUEST_CODE: //si viene de la captura de foto para multimedia
+                if(resultCode == RESULT_OK){
+                    launchUploadActivity(true);
+                }else if (resultCode == RESULT_CANCELED) {
+                    Toast.makeText(getApplicationContext(),"El usuario ha cancelado la captura", Toast.LENGTH_SHORT).show();
+                } else {
+                     Toast.makeText(getApplicationContext(),"Lo siento, fallo en la captura", Toast.LENGTH_SHORT).show();
+                }
+                break;
+                   /* File file = new File(fileFotoCaptura);
+                    if (file.exists()) {
+                        UploaderFoto nuevaTarea = new UploaderFoto();
+                        nuevaTarea.execute(foto);
                     }
-                });
-                dialogo1.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialogo1, int id) {
-                        Intent intent = new Intent(getApplicationContext(), LogueoActivity.class);
-                        startActivityForResult(intent, 1234);
-                    }
-                });
-                dialogo1.show();
-            }
-            CargarPerfil();
+                    else
+                        Toast.makeText(getApplicationContext(), "No se ha realizado la foto", Toast.LENGTH_SHORT).show();
+                }   String dir =  ruta_temp + "miestadiotemp" + rutaCapturafecha + ".jpg";
+                    Bitmap bitmap = BitmapFactory.decodeFile(dir);
+                    int rotate=0;
+                    ExifInterface exif = new ExifInterface(fileFotoCaptura.getAbsolutePath());*/
+
+            case 101: //si viene de la seleccion de imagen para multimedia
+                if(resultCode == RESULT_OK){
+                    Uri path = data.getData();
+                    //imageView.setImageURI(path);
+                }
+                break;
+
+            case CAMERA_CAPTURE_VIDEO_REQUEST_CODE:
+                if (resultCode == RESULT_OK) {
+                    launchUploadActivity(false);
+                } else if (resultCode == RESULT_CANCELED) {
+                    Toast.makeText(getApplicationContext(),"El usuario ha cancelado la captura", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getApplicationContext(),"Lo siento, fallo en la captura", Toast.LENGTH_SHORT).show();
+                }
+                break;
+
+            case 110: //imagen de perfil
+                if(resultCode == RESULT_OK) {
+                    String dir = ruta_temp + "miestadioperfil.jpg";
+                    Bitmap imagentemp = BitmapFactory.decodeFile(dir);
+                    String rutaimagen = guardarImagenRutaApp(getApplicationContext(), "imagenperfil", imagentemp);
+
+                    SharedPreferences pref = getApplicationContext().getSharedPreferences("com.dhenao.miestadio_preferences", 0);
+                    SharedPreferences.Editor editor = pref.edit();
+                    editor.putString("ImagenPerf", rutaimagen);
+                    editor.commit();
+
+                    CargarPerfil();
+                    Toast.makeText(getApplicationContext(), rutaimagen, Toast.LENGTH_LONG).show();
+                }
+                break;
+
+            case 1234: //si viene del logueo
+                if (resultCode == RESULT_CANCELED){
+                    AlertDialog.Builder dialogo1 = new AlertDialog.Builder(this);
+                    dialogo1.setTitle("Salir de Mi Estadio");
+                    dialogo1.setMessage("¿ Desea salir de Mi Estadio ?");
+                    dialogo1.setCancelable(false);
+                    dialogo1.setPositiveButton("Confirmar", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialogo1, int id) {
+                            finish();
+                        }
+                    });
+                    dialogo1.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialogo1, int id) {
+                            Intent intent = new Intent(getApplicationContext(), LogueoActivity.class);
+                            startActivityForResult(intent, 1234);
+                        }
+                    });
+                    dialogo1.show();
+                }
+                CargarPerfil();
+                break;
         }
+    }
+
+
+    private void launchUploadActivity(boolean isImage){
+        Intent i = new Intent(ActividadPrincipal.this, UploadActivity.class);
+        i.putExtra("filePath", fileUri.getPath());
+        i.putExtra("isImage", isImage);
+        startActivity(i);
     }
 
 /* para el menu contextual.... no borrar
@@ -292,32 +401,122 @@ public class ActividadPrincipal extends AppCompatActivity {
                 return true;
 
             case R.id.mult_tomarfoto:
-                //Si no existe crea la carpeta donde se guardaran las fotos
-                filefotos.mkdirs();
-                File mi_foto = new File( ruta_temp + "miest" +  tomarFechayhora() + ".jpg" );
-                try {
-                    mi_foto.createNewFile();
-                } catch (IOException ex) {
-                    Log.e("ERROR ", "Error:" + ex);
-                }
-                //
-                Uri uri = Uri.fromFile( mi_foto );
-                //Abre la camara para tomar la foto
-                Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                //Guarda imagen
-                cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
-                //Retorna a la actividad
-                startActivityForResult(cameraIntent, 0);
-
-                /*aqui debo coger la foto de la ruta y subirla*/
-
+                captureMultimedia(1);
+                //abrirCamara();
                 return true;
+
+            case R.id.mult_subirfoto:
+                abrirMultimedia();
+                return true;
+
+            case R.id.mult_tomarvideo:
+                captureMultimedia(3);
+                return true;
+
             case R.id.menuconf_configuracion:
                 startActivity(new Intent(this, ActividadConfiguracion.class));
                 return true;
-
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void captureMultimedia(int tipo) {
+        if (getApplicationContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+            Intent intent;
+            switch (tipo) {
+                case 1: //capturo foto
+                    intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    fileUri = getOutputMediaFileUri(MEDIA_TYPE_IMAGE);
+                    intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+                    // start the image capture Intent
+                    startActivityForResult(intent, CAMERA_CAPTURE_IMAGE_REQUEST_CODE);
+                    break;
+
+                case 3: //capturo video
+                    intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+                    fileUri = getOutputMediaFileUri(MEDIA_TYPE_VIDEO);
+                    // set video quality
+                    intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
+                    intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri); // set the image file name
+                    // start the video capture Intent
+                    startActivityForResult(intent, CAMERA_CAPTURE_VIDEO_REQUEST_CODE);
+                    break;
+            }
+        } else {
+            Toast.makeText(getApplicationContext(), "Tu camara no esta lista!!!", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) { super.onSaveInstanceState(outState);
+        outState.putParcelable("file_uri", fileUri); // save file url in bundle as it will be null on screen orientation changes
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) { super.onRestoreInstanceState(savedInstanceState);
+        fileUri = savedInstanceState.getParcelable("file_uri"); // get the file url
+    }
+
+
+    public void abrirCamara(){
+        //Si no existe crea la carpeta donde se guardaran las fotos
+        rutafotos.mkdirs();
+        fileFotoCaptura = new File( ruta_temp + "miestadiotemp" + tomarFechayhora() + ".jpg" );
+        try {
+            fileFotoCaptura.createNewFile();
+        } catch (IOException ex) {
+            Log.e("ERROR ", "Error:" + ex);
+        }
+        uriCaptura = Uri.fromFile( fileFotoCaptura );
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriCaptura);
+        //Retorna a la actividad
+        startActivityForResult(cameraIntent, 100);
+        //el resultado se debe optener del activity result
+    }
+
+
+    public void abrirMultimedia(){
+        Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        intent.setType("image/*");
+        startActivityForResult(intent.createChooser(intent, "Selecciona app de imagen"), 101);
+    }
+
+
+
+    private String guardarImagenRutaApp (Context context, String nombre, Bitmap imagen){
+        ContextWrapper cw = new ContextWrapper(context);
+        File dirImages = cw.getDir("Imagenes", Context.MODE_PRIVATE);
+        File myPath = new File(dirImages, nombre + ".jpg");
+
+        FileOutputStream fos = null;
+        try{
+            fos = new FileOutputStream(myPath);
+            imagen.compress(Bitmap.CompressFormat.JPEG, 10, fos);
+            fos.flush();
+        }catch (FileNotFoundException ex){
+            ex.printStackTrace();
+        }catch (IOException ex){
+            ex.printStackTrace();
+        }
+        return myPath.getAbsolutePath();
+    }
+
+
+    public void clickImagenPerfil(View target) {
+        rutafotos.mkdirs();
+        fileFotoCaptura = new File( ruta_temp + "miestadioperfil.jpg" );
+        try {
+            fileFotoCaptura.createNewFile();
+        } catch (IOException ex) {
+            Log.e("ERROR ", "Error:" + ex);
+        }
+        uriCaptura = Uri.fromFile( fileFotoCaptura );
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriCaptura);
+        //Retorna a la actividad
+        startActivityForResult(cameraIntent, 110);
+        //el resultado se debe optener del activity result
     }
 
 
@@ -358,7 +557,6 @@ public class ActividadPrincipal extends AppCompatActivity {
     }
 
 
-
     private void agregarToolbar() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -386,101 +584,6 @@ public class ActividadPrincipal extends AppCompatActivity {
     }
 
 
-
-    class CargarLosEquipos extends AsyncTask<String, String, String> {
-
-        /**
-         * Antes de empezar el background thread Show Progress Dialog
-         */
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            pDialog = new ProgressDialog(ActividadPrincipal.this);
-            pDialog.setMessage("Haciendo la consulta. Por favor espere...");
-            pDialog.setIndeterminate(false);
-            pDialog.setCancelable(false);
-            pDialog.show();
-        }
-
-        /**
-         * obteniendo los equipos
-         */
-        protected String doInBackground(String... args) {
-            // Building Parameters
-            List params = new ArrayList();
-
-            Toast.makeText(getApplicationContext(), "jParser.makeHttpRequest", Toast.LENGTH_SHORT).show();
-            // getting JSON string from URL
-            Toast.makeText(getApplicationContext(), "antes de json" , Toast.LENGTH_SHORT).show();
-            JSONObject json = jParser.makeHttpRequest(url_info_equipos, "GET", params);
-            Toast.makeText(getApplicationContext(), "despues de json" , Toast.LENGTH_SHORT).show();
-
-            try {
-                // Checking for SUCCESS TAG
-                int success = json.getInt(TAG_ESTADO);
-
-                if (success == 1) {
-                    // titulos found
-                    // Getting Array of Products
-                    equipos = json.getJSONArray(TAG_TITULO);
-
-                    // looping through All Products
-                    //Log.i("ramiro", "produtos.length" + equipos.length());
-                    for (int i = 0; i < equipos.length(); i++) {
-                        JSONObject c = equipos.getJSONObject(i);
-/*
-                        // Storing each json item in variable
-                        String id = c.getString(TAG_ID);
-                        String name = c.getString(TAG_NOMBRE);
-
-                        // creating new HashMap
-                        HashMap map = new HashMap();
-
-                        // adding each child node to HashMap key => value
-                        map.put(TAG_ID, id);
-                        map.put(TAG_NOMBRE, name);
-
-                        empresaList.add(map);
-  */
-                    }
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        /**
-         * After completing background task Dismiss the progress dialog
-         **/
-       /*
-        protected void onPostExecute(String file_url) {
-            // dismiss the dialog after getting all equipos
-            pDialog.dismiss();
-            // updating UI from Background Thread
-            runOnUiThread(new Runnable() {
-                public void run() {
-                    ListAdapter adapter = new SimpleAdapter(
-                            ActividadPrincipal.this,
-                            empresaList,
-                            R.layout.contenido_item1,
-                            new String[]{
-                                    TAG_ID,
-                                    TAG_NOMBRE,
-                            },
-                            new int[]{
-                                    R.id.single_post_tv_id,
-                                    R.id.single_post_tv_nombre,
-                            });
-                    // updating listview
-                    //setListAdapter(adapter);
-                    lista.setAdapter(adapter);
-                }
-            });
-        }*/
-    }
-
-
     private boolean verificaConexion(){
         ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
@@ -501,4 +604,59 @@ public class ActividadPrincipal extends AppCompatActivity {
         return dateFormat.format(new Date());
     }
 
+
+
+
+
+    /**
+     * ------------ Helper Methods ----------------------
+     * */
+
+    /**
+     * Creating file uri to store image/video
+     */
+    public Uri getOutputMediaFileUri(int type) {
+        return Uri.fromFile(getOutputMediaFile(type));
+    }
+
+    /**
+     * returning image / video
+     */
+    private static File getOutputMediaFile(int type) {
+
+        // External sdcard location
+        File mediaStorageDir = new File(
+                Environment
+                        .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+                Config.IMAGE_DIRECTORY_NAME);
+
+        // Create the storage directory if it does not exist
+        if (!mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
+                Log.d(TAG, "Oops! Failed create "
+                        + Config.IMAGE_DIRECTORY_NAME + " directory");
+                return null;
+            }
+        }
+
+        // Create a media file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss",
+                Locale.getDefault()).format(new Date());
+        File mediaFile;
+        if (type == MEDIA_TYPE_IMAGE) {
+            mediaFile = new File(mediaStorageDir.getPath() + File.separator
+                    + "IMG_" + timeStamp + ".jpg");
+        } else if (type == MEDIA_TYPE_VIDEO) {
+            mediaFile = new File(mediaStorageDir.getPath() + File.separator
+                    + "VID_" + timeStamp + ".mp4");
+        } else {
+            return null;
+        }
+
+        return mediaFile;
+    }
+
 }
+
+
+

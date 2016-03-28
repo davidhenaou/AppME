@@ -2,18 +2,16 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:background="@color/colorPrimary"
-    android:gravity="bottom"
     android:orientation="vertical"
-    android:padding="@dimen/padding_izquierdo_cabecera"
+    android:padding="0dp"
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
-
+    <!--android:padding=@dimen/padding_izquierdo_cabecera-->
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:layout_marginTop="15dp"
+        android:layout_height="wrap_content"
         android:background="@drawable/fotoestadio"
         android:orientation="horizontal"
         android:gravity="center"
@@ -25,14 +23,19 @@
             android:layout_height="80dp"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
-            android:src="@mipmap/ic_launcher" />
+            android:src="@mipmap/ic_launcher"
+            android:onClick="clickImagenPerfil" />
 
         <TableLayout
             android:id="@+id/datos_perfil"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:columnCount="1"
-            android:rowCount="3">
+            android:rowCount="3"
+            style="@style/textenObjetoRectangularOscuro"
+            android:background="@drawable/objeto_rectangular_transparente"
+
+            >
 
             <TableRow
                 android:layout_width="match_parent"
@@ -43,7 +46,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/usuario"
                     android:textColor="@color/icons"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
                     android:textStyle="bold"
                     android:layout_column="1" />
             </TableRow>

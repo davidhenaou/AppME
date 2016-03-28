@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
@@ -13,8 +14,10 @@
     <uses-permission android:name="android.permission.USE_CREDENTIALS"/>
     <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
     <uses-permission android:name="android.permission.MANAGE_ACCOUNTS"/>
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS"/>
     <!-- Authenticator -->
     <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS"/>
+
 
     <application
         android:allowBackup="true"
@@ -31,16 +34,17 @@
         <activity android:configChanges="screenSize|orientation" android:name=".ActividadPrincipal" android:label="@string/app_name" android:theme="@style/AppTheme" />
 
 
-        <activity android:name=".system.ActividadConfiguracion" android:label="@string/app_name" android:theme="@style/AppTheme" />
+        <activity android:name=".system.ActividadConfiguracion" android:theme="@style/AppTheme" />
 
-        <activity android:name=".ui.CargaralgunContenido" android:label="@string/app_name" android:theme="@style/AppTheme" />
+        <activity android:name=".ui.CargaralgunContenido" android:theme="@style/AppTheme" />
 
-        <activity android:name=".ui.CargaContenido" android:label="@string/app_name" android:theme="@style/AppTheme" />
+        <activity android:name=".ui.CargaContenido" android:theme="@style/AppTheme" />
 
-        <activity android:name=".ui.MultiTouchActivity" android:label="@string/app_name" android:theme="@style/AppTheme" />
+        <activity android:name=".ui.MultiTouchActivity" android:theme="@style/AppTheme" />
 
         <activity android:name=".system.autenticacion.LogueoActivity" android:label="@string/app_name" android:screenOrientation="portrait" android:theme="@style/AppTheme" />
 
+        <activity android:name=".system.sync.UploadActivity" android:screenOrientation="portrait" />
 
         <service android:name=".system.sync.ServicioCuentaSinc"
             android:exported="true" android:process=":auth">

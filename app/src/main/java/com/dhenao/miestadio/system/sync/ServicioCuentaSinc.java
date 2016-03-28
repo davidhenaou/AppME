@@ -52,7 +52,7 @@ public class ServicioCuentaSinc extends Service {
             Bundle reply = new Bundle();
 
             Intent i = new Intent(mContext, ActividadPrincipal.class);
-            i.setAction("fm.last.android.sync.LOGIN");
+            i.setAction("com.dhenao.miestadio.LOGIN");
             i.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response);
             reply.putParcelable(AccountManager.KEY_INTENT, i);
 
