@@ -155,6 +155,28 @@ public class ActividadPrincipal extends AppCompatActivity {
             Intent intent = new Intent(this, LogueoActivity.class);
             startActivityForResult(intent, 1234);
         }
+
+
+        ImageView imagenPerfil = (ImageView) findViewById(R.id.icono_miperfil);
+        imagenPerfil.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                rutafotos.mkdirs();
+                fileFotoCaptura = new File( ruta_temp + "miestadioperfil.jpg" );
+                try {
+                    fileFotoCaptura.createNewFile();
+                } catch (IOException ex) {
+                    Log.e("ERROR ", "Error:" + ex);
+                }
+                uriCaptura = Uri.fromFile( fileFotoCaptura );
+                Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriCaptura);
+                //Retorna a la actividad
+                startActivityForResult(cameraIntent, 110);
+                //el resultado se debe optener del activity result
+            }
+        });
+
+
         /*NO BORRAR funciona... configuracion del boton flotante*/
         /*FloatingActionButton botonflotante = (FloatingActionButton) findViewById(R.id.botonflotante);
         botonflotante.setOnClickListener(new View.OnClickListener() {
@@ -502,22 +524,6 @@ public class ActividadPrincipal extends AppCompatActivity {
         return myPath.getAbsolutePath();
     }
 
-
-    public void clickImagenPerfil(View target) {
-        rutafotos.mkdirs();
-        fileFotoCaptura = new File( ruta_temp + "miestadioperfil.jpg" );
-        try {
-            fileFotoCaptura.createNewFile();
-        } catch (IOException ex) {
-            Log.e("ERROR ", "Error:" + ex);
-        }
-        uriCaptura = Uri.fromFile( fileFotoCaptura );
-        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriCaptura);
-        //Retorna a la actividad
-        startActivityForResult(cameraIntent, 110);
-        //el resultado se debe optener del activity result
-    }
 
 
     public void clickEnImagen(View target) {
