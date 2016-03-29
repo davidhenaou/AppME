@@ -1,6 +1,7 @@
 package com.dhenao.miestadio;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
@@ -10,6 +11,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -20,7 +22,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -63,6 +64,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -92,8 +94,10 @@ public class ActividadPrincipal extends AppCompatActivity {
     // LogCat tag
     private static final String TAG = ActividadPrincipal.class.getSimpleName();
     // Camera activity request codes
-    private static final int CAMERA_CAPTURE_IMAGE_REQUEST_CODE = 100;
-    private static final int CAMERA_CAPTURE_VIDEO_REQUEST_CODE = 200;
+    private static final int CAPTURA_CAMARA_IMAGEN_CODIGO_RESPUESTA = 100;
+    private static final int CAPTURA_BIBLIOTECA_IMAGEN_CODIGO_RESPUESTA = 101;
+    private static final int CAPTURA_CAMARA_VIDEO_CODIGO_RESPUESTA = 200;
+    private static final int CAPTURA_BIBLIOTECA_VIDEO_CODIGO_RESPUESTA = 201;
     public static final int MEDIA_TYPE_IMAGE = 1;
     public static final int MEDIA_TYPE_VIDEO = 2;
     private Uri fileUri; // file url to store image/video
@@ -158,18 +162,18 @@ public class ActividadPrincipal extends AppCompatActivity {
 
 
         ImageView imagenPerfil = (ImageView) findViewById(R.id.icono_miperfil);
-        imagenPerfil.setOnClickListener(new View.OnClickListener() {
+        imagenPerfil.setOnClickListener(new View.OnClickListener() { //capturar imagen de perfil
             public void onClick(View v) {
                 rutafotos.mkdirs();
-                fileFotoCaptura = new File( ruta_temp + "miestadioperfil.jpg" );
+                fileFotoCaptura = new File(ruta_temp + "miestadioperfil.jpg");
                 try {
                     fileFotoCaptura.createNewFile();
                 } catch (IOException ex) {
                     Log.e("ERROR ", "Error:" + ex);
                 }
-                uriCaptura = Uri.fromFile( fileFotoCaptura );
+                //uriCaptura = Uri.fromFile(fileFotoCaptura);
                 Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriCaptura);
+                cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(fileFotoCaptura));
                 //Retorna a la actividad
                 startActivityForResult(cameraIntent, 110);
                 //el resultado se debe optener del activity result
@@ -205,9 +209,6 @@ public class ActividadPrincipal extends AppCompatActivity {
         edtCorreoPerfil.setText(CorreoPerfil);
         edtCelularPerfil.setText(CelularPerfil);
         if (!TextUtils.isEmpty(rutaImagenperf)){
-            //File imgFile = new File(rutaImagenperf);
-            //imagenPerfil.setImageURI(Uri.fromFile(imgFile));
-            //imagenPerfil.invalidate();
             File imgFile = new File(rutaImagenperf);
             Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
             imagenPerfil.setImageBitmap(myBitmap);
@@ -234,41 +235,61 @@ public class ActividadPrincipal extends AppCompatActivity {
 
 
 
-
     @Override
     protected void onActivityResult (int requestCode, int resultCode, Intent data){
         switch (requestCode) {
-            case CAMERA_CAPTURE_IMAGE_REQUEST_CODE: //si viene de la captura de foto para multimedia
+            case CAPTURA_CAMARA_IMAGEN_CODIGO_RESPUESTA: //si viene de la captura de foto para multimedia
                 if(resultCode == RESULT_OK){
-                    launchUploadActivity(true);
+                    fileUri = Uri.parse(fileUri.toString().substring(7,fileUri.toString().length()));
+                    fileFotoCaptura = new File( fileUri.toString() );
+                    Bitmap imagentemp = rotarImagen(fileFotoCaptura);
+                    File file = getOutputMediaFile(MEDIA_TYPE_IMAGE);
+                    try {
+                        OutputStream os = new BufferedOutputStream(new FileOutputStream(file));
+                        imagentemp.compress(Bitmap.CompressFormat.JPEG, 100, os);
+                        os.close();
+                    }  catch (Exception e) {
+                        Log.e("ERROR ", "Error:" + e);
+                    }
+                    fileUri = Uri.parse("file://" + file.toString());
+                    lanzarSubirImagenWeb(true);
                 }else if (resultCode == RESULT_CANCELED) {
                     Toast.makeText(getApplicationContext(),"El usuario ha cancelado la captura", Toast.LENGTH_SHORT).show();
                 } else {
                      Toast.makeText(getApplicationContext(),"Lo siento, fallo en la captura", Toast.LENGTH_SHORT).show();
                 }
                 break;
-                   /* File file = new File(fileFotoCaptura);
-                    if (file.exists()) {
-                        UploaderFoto nuevaTarea = new UploaderFoto();
-                        nuevaTarea.execute(foto);
-                    }
-                    else
-                        Toast.makeText(getApplicationContext(), "No se ha realizado la foto", Toast.LENGTH_SHORT).show();
-                }   String dir =  ruta_temp + "miestadiotemp" + rutaCapturafecha + ".jpg";
-                    Bitmap bitmap = BitmapFactory.decodeFile(dir);
-                    int rotate=0;
-                    ExifInterface exif = new ExifInterface(fileFotoCaptura.getAbsolutePath());*/
 
-            case 101: //si viene de la seleccion de imagen para multimedia
-                if(resultCode == RESULT_OK){
-                    Uri path = data.getData();
-                    //imageView.setImageURI(path);
+            case CAPTURA_BIBLIOTECA_IMAGEN_CODIGO_RESPUESTA: //si viene de la seleccion de imagen para multimedia
+                if(resultCode == RESULT_OK) {
+                    fileUri = data.getData();
+                    String[] projection = {MediaStore.MediaColumns.DATA};
+                    Cursor cursor = this.managedQuery(fileUri, projection, null, null, null);
+                    int column_index = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
+                    cursor.moveToFirst();
+                    fileUri = Uri.parse(cursor.getString(column_index));
+                    fileFotoCaptura = new File( fileUri.toString() );
+                    Bitmap imagentemp = rotarImagen(fileFotoCaptura);
+                    File file = getOutputMediaFile(MEDIA_TYPE_IMAGE);
+                    try {
+                        OutputStream os = new BufferedOutputStream(new FileOutputStream(file));
+                        imagentemp.compress(Bitmap.CompressFormat.JPEG, 100, os);
+                        os.close();
+                    }  catch (Exception e) {
+                        Log.e("ERROR ", "Error:" + e);
+                    }
+                    fileUri = Uri.parse("file://" + file.toString());
+                    lanzarSubirImagenWeb(true);
+                }else if (resultCode == RESULT_CANCELED) {
+                    Toast.makeText(getApplicationContext(),"Cancelada la operacion", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getApplicationContext(),"Lo siento, fallo en la operacion", Toast.LENGTH_SHORT).show();
                 }
                 break;
 
-            case CAMERA_CAPTURE_VIDEO_REQUEST_CODE:
+            case CAPTURA_CAMARA_VIDEO_CODIGO_RESPUESTA:
                 if (resultCode == RESULT_OK) {
-                    launchUploadActivity(false);
+                    lanzarSubirImagenWeb(false);
                 } else if (resultCode == RESULT_CANCELED) {
                     Toast.makeText(getApplicationContext(),"El usuario ha cancelado la captura", Toast.LENGTH_SHORT).show();
                 } else {
@@ -276,42 +297,32 @@ public class ActividadPrincipal extends AppCompatActivity {
                 }
                 break;
 
-            case 110: //imagen de perfil
+            case CAPTURA_BIBLIOTECA_VIDEO_CODIGO_RESPUESTA:
+                if (resultCode == RESULT_OK) {
+                    fileUri = data.getData();
+                    //String tempPath = getPath(fileUri, ActividadPrincipal.this);
+                    String[] projection = {MediaStore.MediaColumns.DATA};
+                    Cursor cursor = this.managedQuery(fileUri, projection, null, null, null);
+                    int column_index = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
+                    cursor.moveToFirst();
+                    fileUri = Uri.parse(cursor.getString(column_index));
+                    lanzarSubirImagenWeb(false);
+                }else if (resultCode == RESULT_CANCELED) {
+                    Toast.makeText(getApplicationContext(),"Cancelada la operacion", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getApplicationContext(),"Lo siento, fallo en la operacion", Toast.LENGTH_SHORT).show();
+                }
+                break;
+
+            case 110: //capturar imagen de perfil
                 if(resultCode == RESULT_OK) {
-                    try {
-                        String dir = ruta_temp + "miestadioperfil.jpg";
-                        Bitmap imagentemp = BitmapFactory.decodeFile(dir);
-
-                        /*rotar la imagen*/
-                        ExifInterface exif = new ExifInterface(fileFotoCaptura.getAbsolutePath());
-                        int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-                        int rotate = 0;
-                        switch (orientation) {
-                            case ExifInterface.ORIENTATION_ROTATE_270:
-                                rotate = 270;
-                                break;
-                            case ExifInterface.ORIENTATION_ROTATE_180:
-                                rotate = 180;
-                                break;
-                            case ExifInterface.ORIENTATION_ROTATE_90:
-                                rotate = 90;
-                                break;
-                        }
-                        Matrix matrix=new Matrix();
-                        matrix.postRotate(rotate);
-                        imagentemp = Bitmap.createBitmap(imagentemp , 0, 0, imagentemp.getWidth(), imagentemp.getHeight(), matrix, true);
-                        /*fin de rotar la imagen*/
-
-                        String rutaimagen = guardarImagenRutaApp(getApplicationContext(), "imagenperfil", imagentemp);
-                        SharedPreferences pref = getApplicationContext().getSharedPreferences("com.dhenao.miestadio_preferences", 0);
-                        SharedPreferences.Editor editor = pref.edit();
-                        editor.putString("ImagenPerf", rutaimagen);
-                        editor.commit();
-                        CargarPerfil();
-                        //Toast.makeText(getApplicationContext(), rutaimagen, Toast.LENGTH_LONG).show();
-                    } catch (Exception e){
-                        Log.e("ERROR ", "Error:" + e);
-                    }
+                    Bitmap imagentemp = rotarImagen(fileFotoCaptura);
+                    String rutaimagen = guardarImagenRutaApp(getApplicationContext(), "imagenperfil", imagentemp);
+                    SharedPreferences pref = getApplicationContext().getSharedPreferences("com.dhenao.miestadio_preferences", 0);
+                    SharedPreferences.Editor editor = pref.edit();
+                    editor.putString("ImagenPerf", rutaimagen);
+                    editor.commit();
+                    CargarPerfil();
                 }
                 break;
 
@@ -340,7 +351,34 @@ public class ActividadPrincipal extends AppCompatActivity {
     }
 
 
-    private void launchUploadActivity(boolean isImage){
+    public Bitmap rotarImagen(File fileRotar) {
+        Bitmap imagentemp = BitmapFactory.decodeFile(fileRotar.toString());
+        try {
+            ExifInterface exif = new ExifInterface(fileRotar.getAbsolutePath());
+            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+            int rotate = 0;
+            switch (orientation) {
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    rotate = 270;
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    rotate = 180;
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    rotate = 90;
+                    break;
+            }
+            Matrix matrix = new Matrix();
+            matrix.postRotate(rotate);
+            imagentemp = Bitmap.createBitmap(imagentemp, 0, 0, imagentemp.getWidth(), imagentemp.getHeight(), matrix, true);
+        } catch (Exception e){
+            Log.e("ERROR ", "Error:" + e);
+        }
+        return imagentemp;
+    }
+
+
+    private void lanzarSubirImagenWeb(boolean isImage){
         Intent i = new Intent(ActividadPrincipal.this, UploadActivity.class);
         i.putExtra("filePath", fileUri.getPath());
         i.putExtra("isImage", isImage);
@@ -447,11 +485,16 @@ public class ActividadPrincipal extends AppCompatActivity {
                 return true;
 
             case R.id.mult_subirfoto:
-                abrirMultimedia();
+                captureMultimedia(2);
+                //abrirMultimedia();
                 return true;
 
             case R.id.mult_tomarvideo:
                 captureMultimedia(3);
+                return true;
+
+            case R.id.mult_subirvideo:
+                captureMultimedia(4);
                 return true;
 
             case R.id.menuconf_configuracion:
@@ -469,18 +512,27 @@ public class ActividadPrincipal extends AppCompatActivity {
                     intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                     fileUri = getOutputMediaFileUri(MEDIA_TYPE_IMAGE);
                     intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
-                    // start the image capture Intent
-                    startActivityForResult(intent, CAMERA_CAPTURE_IMAGE_REQUEST_CODE);
+                    startActivityForResult(intent, CAPTURA_CAMARA_IMAGEN_CODIGO_RESPUESTA);
+                    break;
+
+                case 2: //seleccion de foto de biblioteca
+                    intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    intent.setType("image/*");
+                    startActivityForResult(intent.createChooser(intent, "Con que abrira la imagen?"), CAPTURA_BIBLIOTECA_IMAGEN_CODIGO_RESPUESTA);
                     break;
 
                 case 3: //capturo video
                     intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
                     fileUri = getOutputMediaFileUri(MEDIA_TYPE_VIDEO);
-                    // set video quality
                     intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
                     intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri); // set the image file name
-                    // start the video capture Intent
-                    startActivityForResult(intent, CAMERA_CAPTURE_VIDEO_REQUEST_CODE);
+                    startActivityForResult(intent, CAPTURA_CAMARA_VIDEO_CODIGO_RESPUESTA);
+                    break;
+
+                case 4: //seleccionar un video
+                    intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    intent.setType("video/*");
+                    startActivityForResult(intent.createChooser(intent, "Con que abrira el video?"), CAPTURA_BIBLIOTECA_VIDEO_CODIGO_RESPUESTA);
                     break;
             }
         } else {
@@ -651,9 +703,7 @@ public class ActividadPrincipal extends AppCompatActivity {
 
         // External sdcard location
         File mediaStorageDir = new File(
-                Environment
-                        .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                Config.IMAGE_DIRECTORY_NAME);
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), Config.IMAGE_DIRECTORY_NAME);
 
         // Create the storage directory if it does not exist
         if (!mediaStorageDir.exists()) {

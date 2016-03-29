@@ -17,13 +17,25 @@
         android:gravity="center"
         >
 
-        <ImageView
+        <de.hdodenhof.circleimageview.CircleImageView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
             android:id="@+id/icono_miperfil"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:src="@mipmap/ic_launcher"
+            app:civ_border_width="2dp"
+            app:civ_border_color="#ffffff"
+            android:layout_marginTop="5dp"
+            android:layout_marginLeft="10dp"
+            />
+
+        <!--ImageView
+            android:id="@+id/icono_miperfil"
+            android:layout_width="96dp"
+            android:layout_height="96dp"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
-            android:src="@mipmap/ic_launcher" />
+            android:src="@mipmap/ic_launcher" /-->
 
         <TableLayout
             android:id="@+id/datos_perfil"
@@ -33,8 +45,8 @@
             android:rowCount="3"
             style="@style/textenObjetoRectangularOscuro"
             android:background="@drawable/objeto_rectangular_transparente"
-
-            >
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp">
 
             <TableRow
                 android:layout_width="match_parent"
@@ -45,7 +57,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/usuario"
                     android:textColor="@color/icons"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:textAppearance="?android:attr/textAppearance"
                     android:textStyle="bold"
                     android:layout_column="1" />
             </TableRow>
@@ -72,7 +84,7 @@
                     android:layout_column="1"
                     android:layout_gravity="center_vertical"
                     android:text="@string/celular"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
                     android:textStyle="bold" />
             </TableRow>
 
