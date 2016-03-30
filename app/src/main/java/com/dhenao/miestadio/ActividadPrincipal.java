@@ -55,6 +55,7 @@ import com.dhenao.miestadio.data.ListAdapterMultimedia;
 import com.dhenao.miestadio.system.ActividadConfiguracion;
 import com.dhenao.miestadio.system.Config;
 import com.dhenao.miestadio.system.autenticacion.LogueoActivity;
+import com.dhenao.miestadio.system.sync.AcitividadSubidaMultimedia;
 import com.dhenao.miestadio.system.sync.UploadActivity;
 import com.dhenao.miestadio.ui.CargaContenido;
 import com.dhenao.miestadio.ui.CargarContenidoViewPager;
@@ -240,7 +241,7 @@ public class ActividadPrincipal extends AppCompatActivity {
         switch (requestCode) {
             case CAPTURA_CAMARA_IMAGEN_CODIGO_RESPUESTA: //si viene de la captura de foto para multimedia
                 if(resultCode == RESULT_OK){
-                    fileUri = Uri.parse(fileUri.toString().substring(7,fileUri.toString().length()));
+                    /*fileUri = Uri.parse(fileUri.toString().substring(7,fileUri.toString().length()));
                     fileFotoCaptura = new File( fileUri.toString() );
                     Bitmap imagentemp = rotarImagen(fileFotoCaptura);
                     File file = getOutputMediaFile(MEDIA_TYPE_IMAGE);
@@ -251,7 +252,7 @@ public class ActividadPrincipal extends AppCompatActivity {
                     }  catch (Exception e) {
                         Log.e("ERROR ", "Error:" + e);
                     }
-                    fileUri = Uri.parse("file://" + file.toString());
+                    fileUri = Uri.parse("file://" + file.toString());*/
                     lanzarSubirImagenWeb(true);
                 }else if (resultCode == RESULT_CANCELED) {
                     Toast.makeText(getApplicationContext(),"El usuario ha cancelado la captura", Toast.LENGTH_SHORT).show();
@@ -379,7 +380,7 @@ public class ActividadPrincipal extends AppCompatActivity {
 
 
     private void lanzarSubirImagenWeb(boolean isImage){
-        Intent i = new Intent(ActividadPrincipal.this, UploadActivity.class);
+        Intent i = new Intent(ActividadPrincipal.this, AcitividadSubidaMultimedia.class);
         i.putExtra("filePath", fileUri.getPath());
         i.putExtra("isImage", isImage);
         startActivity(i);
@@ -541,12 +542,14 @@ public class ActividadPrincipal extends AppCompatActivity {
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) { super.onSaveInstanceState(outState);
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
         outState.putParcelable("file_uri", fileUri); // save file url in bundle as it will be null on screen orientation changes
     }
 
     @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) { super.onRestoreInstanceState(savedInstanceState);
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
         fileUri = savedInstanceState.getParcelable("file_uri"); // get the file url
     }
 

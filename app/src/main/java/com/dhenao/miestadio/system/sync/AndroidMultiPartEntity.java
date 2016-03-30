@@ -8,10 +8,12 @@ import java.nio.charset.Charset;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
 
-
 @SuppressWarnings("deprecation")
-public class AndroidMultiPartEntity extends MultipartEntity
-{
+public class AndroidMultiPartEntity extends MultipartEntity{
+
+
+    @SuppressWarnings("deprecation")
+
 
     private final ProgressListener listener;
 

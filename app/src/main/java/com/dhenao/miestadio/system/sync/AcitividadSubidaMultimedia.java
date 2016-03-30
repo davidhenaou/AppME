@@ -1,27 +1,12 @@
 package com.dhenao.miestadio.system.sync;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.Handler;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.VideoView;
-
-import com.dhenao.miestadio.ActividadPrincipal;
 import com.dhenao.miestadio.R;
 import com.dhenao.miestadio.system.Config;
 import com.dhenao.miestadio.system.sync.AndroidMultiPartEntity.ProgressListener;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -33,10 +18,28 @@ import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 
-import java.io.File;
-import java.io.IOException;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.VideoView;
 
-public class UploadActivity extends Activity {
+import com.dhenao.miestadio.ActividadPrincipal;
+
+public class AcitividadSubidaMultimedia extends Activity {
     // LogCat tag
     private static final String TAG = ActividadPrincipal.class.getSimpleName();
 
@@ -47,6 +50,9 @@ public class UploadActivity extends Activity {
     private VideoView vidPreview;
     private Button btnUpload;
     long totalSize = 0;
+    private File file;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +85,7 @@ public class UploadActivity extends Activity {
 
             @Override
             public void onClick(View v) {
+                file = new File(filePath);
                 // uploading the file to server
                 new UploadFileToServer().execute();
             }
@@ -86,9 +93,8 @@ public class UploadActivity extends Activity {
 
     }
 
-    /**
-     * Displaying captured image/video on the screen
-     * */
+
+
     private void previewMedia(boolean isImage) {
         // Checking whether captured media is image or video
         if (isImage) {
@@ -112,6 +118,7 @@ public class UploadActivity extends Activity {
             vidPreview.start();
         }
     }
+
 
     /**
      * Uploading the file to server
@@ -145,11 +152,16 @@ public class UploadActivity extends Activity {
         private String uploadFile() {
             String responseString = null;
 
-            HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost(Config.FILE_UPLOAD_URL);
-
             try {
-                AndroidMultiPartEntity entity = new AndroidMultiPartEntity(
+
+                HttpClient httpclient = new DefaultHttpClient();
+                HttpPost httppost = new HttpPost(Config.FILE_UPLOAD_URL);
+
+                Log.i("UploadApp", "upload url: " + Config.FILE_UPLOAD_URL);
+
+
+                AndroidMultiPartEntity entity;
+                entity = new AndroidMultiPartEntity(
                         new ProgressListener() {
 
                             @Override
@@ -158,15 +170,18 @@ public class UploadActivity extends Activity {
                             }
                         });
 
-                File sourceFile = new File(filePath);
+                File sourceFile;
+                sourceFile = new File(filePath);
+
+                Log.i("UploadApp", "file path: " + filePath);
 
                 // Adding file data to http body
                 entity.addPart("image", new FileBody(sourceFile));
 
                 // Extra parameters if you want to pass to server
                 entity.addPart("website",
-                        new StringBody("www.miestadio.co"));
-                entity.addPart("email", new StringBody("davidhenaou@gmail.com"));
+                        new StringBody("dnugent.nicewebsite.info"));
+                entity.addPart("email", new StringBody("skatesf@gmail.com"));
 
                 totalSize = entity.getContentLength();
                 httppost.setEntity(entity);
@@ -186,8 +201,10 @@ public class UploadActivity extends Activity {
 
             } catch (ClientProtocolException e) {
                 responseString = e.toString();
+                Log.e("UploadApp", "exception: " + responseString);
             } catch (IOException e) {
                 responseString = e.toString();
+                Log.e("UploadApp", "exception: " + responseString);
             }
 
             return responseString;

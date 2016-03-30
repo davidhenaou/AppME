@@ -5,6 +5,14 @@ android {
     buildToolsVersion "23.0.2"
     useLibrary 'org.apache.http.legacy'
 
+
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+    }
+
+
     defaultConfig {
         applicationId "com.dhenao.miestadio"
         minSdkVersion 19
@@ -32,5 +40,19 @@ dependencies {
     compile 'com.google.code.gson:gson:2.3.1'
     compile 'com.google.android.gms:play-services-appindexing:8.1.0'
     compile 'de.hdodenhof:circleimageview:2.0.0'
-    compile ('org.apache.httpcomponents:httpmime:4.3.5') { exclude group: 'org.apache.httpcomponents', module: 'httpclient' }
+    compile 'org.apache.httpcomponents:httpclient-android:4.3.5.1'
+    compile ('org.apache.httpcomponents:httpmime:4.3.5'){
+        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+    }
+
+    //compile ('org.apache.httpcomponents:httpmime:4.3.6') { exclude group: 'org.apache.httpcomponents', module: 'httpclient' }
+    /*
+    compile ('org.apache.httpcomponents:httpmime:4.3.5'){
+        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+    }
+    compile 'org.apache.httpcomponents:httpcore:4.4.1'
+    compile ('org.apache.httpcomponents:httpcore:4.4.1'){
+        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+    }*/
+
 }
