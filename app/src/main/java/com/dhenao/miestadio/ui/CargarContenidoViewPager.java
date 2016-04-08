@@ -57,7 +57,6 @@ public class CargarContenidoViewPager extends Fragment{
         switch (itemMenu) {
             case 1: //Partido (item del menu, numero de item)
                 adapter.addFragment(ClaseTabsLLenadaConLayout.nuevaInstancia(itemMenu, nmeroItem++),getString(R.string.titulo_item1_tab1));
-                //adapter.addFragment(ClaseTabsLLenadoConListas.nuevaInstancia(itemMenu, nmeroItem++), getString(R.string.titulo_item1_tab1));
                 adapter.addFragment(ClaseTabsLLenadoConListas.nuevaInstancia(itemMenu, nmeroItem++), getString(R.string.titulo_item1_tab2));
                 adapter.addFragment(ClaseTabsLLenadoConListas.nuevaInstancia(itemMenu, nmeroItem++), getString(R.string.titulo_item1_tab3));
                 break;

@@ -1,49 +1,45 @@
 package com.dhenao.miestadio.pantallas;
+import com.dhenao.miestadio.system.Config;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 
-import com.dhenao.miestadio.R;
-import com.dhenao.miestadio.data.Equipos;
-import com.dhenao.miestadio.system.Config;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
+import com.dhenao.miestadio.R;
+import com.dhenao.miestadio.data.MySql.JSONParser;
+
+import org.apache.http.NameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class MinutoaMinuto extends Activity {
-    private TextView equipo1, equipo2;
-    private List<Equipos> listaEquipos;
-    private Equipos equipos;
+    private TextView txtequipo1, txtequipo2;
+    private String equipoS1, equipoS2;
+    private ListView listEquipos;
+    //private List<Equipos> listaEquipos;
     private int posicion=0;
     private boolean respt;
     private String mensajeresp;
-    private ProgressDialog progressDialog;
+    private ProgressDialog pDialog;
+    HashMap<String, String> mapEquipos;
+
+
+    // Creating JSON Parser object
+    JSONParser jParser = new JSONParser();
+    ArrayList<HashMap<String, String>> listaEquipos;
+    JSONArray equipos = null;
+
 
 
     @SuppressLint("InlinedApi")
@@ -51,138 +47,100 @@ public class MinutoaMinuto extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.minutoaminuto);
-        equipo1 = (TextView) findViewById(R.id.nombreequipo1);
-        equipo2 = (TextView) findViewById(R.id.nombreequipo2);
-        //new Mostrar().execute();
+        txtequipo1 = (TextView) findViewById(R.id.nombreequipo1);
+        txtequipo2 = (TextView) findViewById(R.id.nombreequipo2);
+        listEquipos = (ListView) findViewById(R.id.listaEquipos);
+
+        new MostrarEquipos().execute();
     }
 
 
-    public void clickMinutoAminuto1(View target) { //para cargar la ventana de minuto a minuto
-        //progressDialog = ProgressDialog.show(getApplicationContext(), "Descargando información", "Por favor espere", true);
-        Log.d("Inicio la ejecucion", "ejecucion segundo plano");
-        new Mostrar().execute();
-    }
-
-    class Mostrar extends AsyncTask<String,String,String> {
-        @Override
-        protected String doInBackground(String... params) {
-            //if(filtrarDatos())mostrarPersona(posicion);
-            respt = filtrarDatos();
-            return null;
-
-        }
+    class MostrarEquipos extends AsyncTask<String,String,String> {
 
         @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-            Log.d("Termino la ejecucion", "ejecucion segundo plano");
-            //progressDialog.dismiss();
-            //if((!respt)) showAlert("Se presento un error en la consulta. " + mensajeresp ,"Atención");
+        protected void onPreExecute() {
+            super.onPreExecute();
+            pDialog = new ProgressDialog(MinutoaMinuto.this);
+            pDialog.setMessage("Cargando Información, por favor espere...");
+            pDialog.setIndeterminate(false);
+            pDialog.setCancelable(false);
+            pDialog.show();
         }
-    }
 
 
-    private String mostrar(String miurl){
-        InputStream is = null;
-        // Only display the first 500 characters of the retrieved
-        // web page content.
-        int len = 500;
+        protected String doInBackground(String... args) {
+            List<NameValuePair> params = new ArrayList<NameValuePair>();
+            JSONObject json = jParser.makeHttpRequest(Config.URL_MYSQL_EQUIPOS, "GET", params);
+            Log.d("Los Equipos: ", json.toString());
 
-        HttpClient httpclient = new DefaultHttpClient();
-
-        HttpPost httppost = new HttpPost(miurl);
-        //HttpGet httppost = new HttpGet(Config.URL_MYSQL_EQUIPOS);
-        String resultado="";
-        HttpResponse response;
-        try {
-            response = httpclient.execute(httppost);
-            HttpEntity entity = response.getEntity();
-            InputStream instream = entity.getContent();
-            resultado= convertStreamToString(instream);
-        } catch (ClientProtocolException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return resultado;
-    }
-
-
-    private String convertStreamToString(InputStream is) throws IOException {
-        if (is != null) {
-            StringBuilder sb = new StringBuilder();
-            String line;
             try {
-                BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(is, "UTF-8"));
-                while ((line = reader.readLine()) != null) {
-                    sb.append(line).append("\n");
-                }
-            }
-            finally {
-                is.close();
-            }
-            return sb.toString();
-        } else {
-            return "";
-        }
-    }
+                // chequeando estado
+                int estado = json.getInt("estado");
+                if (estado == 1) {
+                    // equipos encontrados
+                    equipos = json.getJSONArray("equipos");
 
+                    // looping through All Products
+                    for (int i = 0; i < equipos.length(); i++) {
+                        JSONObject c = equipos.getJSONObject(i);
 
-    private boolean filtrarDatos(){
-        //listaEquipos.clear();
-        String data=mostrar(Config.URL_MYSQL_EQUIPOS);
-        if(!data.equalsIgnoreCase("")){
-            JSONObject json;
-            try {
-                json = new JSONObject(data);
-                if (json.get("estado")==1) {
-                    JSONArray jsonArray = json.optJSONArray("equipos");
-                    for (int i = 0; i < jsonArray.length(); i++) {
-                        equipos = new Equipos();
-                        JSONObject jsonArrayChild = jsonArray.getJSONObject(i);
-                        equipos.setNombre(jsonArrayChild.optString("equipo"));
+                        // Storing each json item in variable
+                        String equipo = c.getString("equipo");
+                        String descripcion = c.getString("descripcion");
+                        String imagen = c.getString("imagen");
 
-                        listaEquipos.add(equipos);
+                        if (i==0) {
+                            equipoS1 = equipo;
+                        }else{
+                            equipoS2 = equipo;
+                        }
+
+                        // creating new HashMap
+                        mapEquipos = new HashMap<String, String>();
+                        // adding each child node to HashMap key => value
+                        mapEquipos.put("id", String.valueOf(i));
+                        mapEquipos.put("equipo", equipo);
+                        mapEquipos.put("descripcion", descripcion);
+                        mapEquipos.put("imagen", imagen);
+                        //listaEquipos.add(map);
                     }
-                    Log.d("Devolvio datos", "esta devolviendo datos");
-                    return true;
-                }else{
-                    mensajeresp = json.get("mensaje").toString();
-                    Log.d("Error buscando", mensajeresp);
-                    return false;
+                } else {
+                    // no equipos encontrados
+                    Log.d("no encontro equipos: ", json.toString());
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
-                Log.d("Error buscando", e.toString());
             }
+
+            return null;
         }
-        Log.d("Error buscando", "esta vacio");
-        return false;
+
+
+        protected void onPostExecute(String file_url) {
+            // dismiss the dialog after getting all products
+            pDialog.dismiss();
+            // updating UI from Background Thread
+            runOnUiThread(new Runnable() {
+                public void run() {
+                    /**
+                     * Updating parsed JSON data into ListView
+                     * */
+
+                    txtequipo1.setText(equipoS1);
+                    txtequipo2.setText(equipoS2);
+                    /*
+                    ListAdapter adapter = new SimpleAdapter(
+                            MinutoaMinuto.this, listaEquipos,
+                            R.layout.minutoaminuto, new String[] { "nombre",
+                            "descripcion"},
+                            new int[] { R.id.nombre, R.id.descripcion });*/
+                    // updating listview
+                    //setListAdapter(adapter);
+                }
+            });
+
+        }
     }
 
 
-    private void mostrarPersona(final int posicion){
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Equipos equipos = listaEquipos.get(posicion);
-                equipo1.setText(equipos.getNombre());
-            }
-        });
-    }
-
-
-    private void showAlert(String message, String titulo) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(message).setTitle(titulo)
-                .setCancelable(false)
-                .setPositiveButton("Listo", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        //no hacer nada
-                    }
-                });
-        AlertDialog alert = builder.create();
-        alert.show();
-    }
 }

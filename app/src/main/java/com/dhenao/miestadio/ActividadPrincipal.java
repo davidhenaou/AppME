@@ -2,6 +2,7 @@ package com.dhenao.miestadio;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.DialogInterface;
@@ -17,6 +18,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -38,6 +40,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.dhenao.miestadio.data.MySql.ConsultaMySql;
 import com.dhenao.miestadio.pantallas.MinutoaMinuto;
 import com.dhenao.miestadio.system.ActividadConfiguracion;
 import com.dhenao.miestadio.system.Config;
@@ -59,6 +62,7 @@ import java.util.Date;
 import java.util.Locale;
 
 public class ActividadPrincipal extends AppCompatActivity {
+
     private DrawerLayout drawerLayout; //del menu principal
 
     /***para la carga de imagenes***/
@@ -77,11 +81,19 @@ public class ActividadPrincipal extends AppCompatActivity {
     public File fileFotoCaptura;
     public Uri uriCaptura;
 
+
+    /*para los cuadros de dialogo*/
+    private ProgressDialog pDialog;
+
+    //Variable para jugar con la consulta de MySql que se esta haciendo
+    public static int ConsultaMySql = 0;
+
     /*** para el refresco de listas*/
     /*private RecyclerView recycler;
     private ListAdapterMultimedia adapter;
     private RecyclerView.LayoutManager lManager;
     private SwipeRefreshLayout refreshLayout;*/
+
 
 
     @Override
@@ -98,6 +110,8 @@ public class ActividadPrincipal extends AppCompatActivity {
             prepararDrawer(navigationView);
             // Seleccionar item por defecto el que inicia
             seleccionarItem(navigationView.getMenu().getItem(0));
+            ConsultaMySql = 1;
+            new ConsultaMysql().execute();
         }
 
         CargarPerfil();
@@ -178,7 +192,6 @@ public class ActividadPrincipal extends AppCompatActivity {
             super.onBackPressed();
         }
     }
-
 
 
     @Override
@@ -674,6 +687,86 @@ public class ActividadPrincipal extends AppCompatActivity {
     public void clickMinutoAminuto(View target) { //para cargar la ventana de minuto a minuto
         Intent i = new Intent(ActividadPrincipal.this, MinutoaMinuto.class );
         startActivity(i);
+    }
+
+
+
+
+
+
+
+
+
+    /*tarea que hace la consulta a mysql*/
+    class ConsultaMysql extends AsyncTask<String,String,String> {
+        String mensajeProgress;
+        /*
+        String equipoJson1, equipoJson2;
+        String descripcionJson1, descripcionJson2;
+        String imagenJson1, imagenJson2;
+        */
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            if(ConsultaMySql==1) mensajeProgress="Cargando Informacion de Minuto A Minuto";
+
+            pDialog = new ProgressDialog(ActividadPrincipal.this);
+            pDialog.setMessage(mensajeProgress + ", Por favor espere...");
+            pDialog.setIndeterminate(false);
+            pDialog.setCancelable(false);
+
+            if(ConsultaMySql==1) pDialog.show();
+        }
+
+
+        protected String doInBackground(String... args) {
+            ConsultaMySql consultaMsql = new ConsultaMySql(ConsultaMySql);
+            /*List<NameValuePair> params = new ArrayList<NameValuePair>();
+            JSONParser jParser = new JSONParser();
+            JSONObject json = jParser.makeHttpRequest(Config.URL_MYSQL_EQUIPOS, "GET", params);
+            Log.d("Los Equipos: ", json.toString());
+
+            try {
+                // chequeando estado
+                int estado = json.getInt("estado");
+                if (estado == 1) {
+                    // equipos encontrados
+                    JSONArray equiposJson = json.getJSONArray("equipos");
+                    JSONObject c;
+                    c = equiposJson.getJSONObject(0);
+                    equipoJson1 = c.getString("equipo");
+                    descripcionJson1 = c.getString("descripcion");
+                    imagenJson1 = c.getString("imagen");
+
+                    c = equiposJson.getJSONObject(1);
+                    equipoJson2 = c.getString("equipo");
+                    descripcionJson2 = c.getString("descripcion");
+                    imagenJson2 = c.getString("imagen");
+
+                } else {
+                    // no equipos encontrados
+                    Log.d("no encontro equipos: ", json.toString());
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }*/
+            return null;
+        }
+
+
+        protected void onPostExecute(String file_url) {
+            //desaparezco el cuadro de dialogo
+            pDialog.dismiss();
+
+            runOnUiThread(new Runnable() {
+                public void run() {
+                    TextView txtequipo1 = (TextView) findViewById(R.id.nombreequipo1);
+                    TextView txtequipo2 = (TextView) findViewById(R.id.nombreequipo2);
+                    txtequipo1.setText(Config.pEquipo1NombreMaM);
+                    txtequipo2.setText(Config.pEquipo2NombreMaM);
+                }
+            });
+        }
     }
 
 }

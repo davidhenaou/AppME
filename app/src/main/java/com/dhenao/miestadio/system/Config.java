@@ -19,5 +19,14 @@ public class Config {
     //directorio donde reviso los equipos que juegan
     public static final String URL_MYSQL_EQUIPOS = "http://" + ipequipo + "/mysql/obtener_equipos.php";
 
+    //informacion de minuto a minuto
+    public static String pEquipo1NombreMaM = "";
+    public static String pEquipo1DescripcionMaM = "";
+    public static String pEquipo1ImagenMaM = "";
+
+    public static String pEquipo2NombreMaM = "";
+    public static String pEquipo2DescripcionMaM = "";
+    public static String pEquipo2ImagenMaM = "";
+
 
 }
