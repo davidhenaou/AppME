@@ -27,7 +27,6 @@ public class MinutoaMinuto extends Activity {
     private TextView txtequipo1, txtequipo2;
     private String equipoS1, equipoS2;
     private ListView listEquipos;
-    //private List<Equipos> listaEquipos;
     private int posicion=0;
     private boolean respt;
     private String mensajeresp;

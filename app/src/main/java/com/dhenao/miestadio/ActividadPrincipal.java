@@ -109,7 +109,7 @@ public class ActividadPrincipal extends AppCompatActivity {
 
         if (navigationView != null) {
             prepararDrawer(navigationView);
-            //seleccionarItem(navigationView.getMenu().getItem(0)); // Seleccionar item por defecto el que inicia
+            seleccionarItem(navigationView.getMenu().getItem(0)); // Seleccionar item por defecto el que inicia
             refrecoObjetos.CargaPerfil(ActividadPrincipal.this); //CargarPerfil();
         }
 
@@ -231,7 +231,6 @@ public class ActividadPrincipal extends AppCompatActivity {
             case CAPTURA_IMAGEN_PERFIL_CODIGO_RESPUESTA: //capturar imagen de perfil
                 if(resultCode == RESULT_OK) {
                     Bitmap imagentemp = rotarImagen(fileFotoCaptura);
-                    //recortarImagen(Uri.fromFile(fileFotoCaptura));
                     String rutaimagen = guardarImagenRutaApp(getApplicationContext(), "imagenperfil", imagentemp);
                     SharedPreferences pref = getApplicationContext().getSharedPreferences("com.dhenao.miestadio_preferences", 0);
                     SharedPreferences.Editor editor = pref.edit();
@@ -241,7 +240,7 @@ public class ActividadPrincipal extends AppCompatActivity {
                 }
                 break;
 
-            case RECORTA_IMAGEN_CODIGO_RESPUESTA: //recorto la imagen
+            /*case RECORTA_IMAGEN_CODIGO_RESPUESTA: //recorto la imagen
                 Bundle extras = data.getExtras();
                 Bitmap imagenRecortada = extras.getParcelable("data");
                 fileFotoCaptura = new File(ruta_temp + "miestadioperfil.jpg");
@@ -253,9 +252,7 @@ public class ActividadPrincipal extends AppCompatActivity {
                 editor.putString("ImagenPerf", rutaimagen);
                 editor.commit();
                 refrecoObjetos.CargaPerfil(ActividadPrincipal.this); //CargarPerfil();
-
-                break;
-
+                break;*/
 
             case 1234: //si viene del logueo
                 if (resultCode == RESULT_CANCELED){
@@ -278,24 +275,6 @@ public class ActividadPrincipal extends AppCompatActivity {
                 }
                 refrecoObjetos.CargaPerfil(ActividadPrincipal.this); //CargarPerfil();
                 break;
-        }
-    }
-
-
-    private void recortarImagen(Uri uriarchivo){
-        try {
-            Intent cropIntent = new Intent("com.android.camera.action.CROP");
-            cropIntent.setDataAndType(uriarchivo, "image/*");
-            cropIntent.putExtra("crop", "true");
-            cropIntent.putExtra("aspectX", 1);
-            cropIntent.putExtra("aspectY", 1);
-            cropIntent.putExtra("outputX", 256);
-            cropIntent.putExtra("outputY", 256);
-            cropIntent.putExtra("return-data", true);
-            startActivityForResult(cropIntent, RECORTA_IMAGEN_CODIGO_RESPUESTA);
-        }
-        catch(ActivityNotFoundException anfe){
-            Toast.makeText(getApplicationContext(), "Upsss.... tu dispositivo no puede recortar la imagen!" , Toast.LENGTH_SHORT).show();
         }
     }
 
