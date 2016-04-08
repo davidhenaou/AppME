@@ -1,12 +1,12 @@
-package com.dhenao.miestadio.system.sync;
+package com.dhenao.miestadio.pantallas;
 
 import com.dhenao.miestadio.R;
 import com.dhenao.miestadio.system.Config;
+import com.dhenao.miestadio.system.sync.AndroidMultiPartEntity;
 import com.dhenao.miestadio.system.sync.AndroidMultiPartEntity.ProgressListener;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -24,8 +24,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -37,92 +35,93 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import com.dhenao.miestadio.ActividadPrincipal;
 
-public class AcitividadSubidaMultimedia extends Activity {
-    // LogCat tag
+public class SubirMultimediaaSevidor extends Activity {
     private static final String TAG = ActividadPrincipal.class.getSimpleName();
 
     private ProgressBar progressBar;
     private String filePath = null;
-    private TextView txtPercentage;
+    //private TextView txtPercentage;
+    private TextView txtComentarios;
     private ImageView imgPreview;
     private VideoView vidPreview;
     private Button btnUpload;
     long totalSize = 0;
     private File file;
-
+    boolean isImage;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_upload);
-        txtPercentage = (TextView) findViewById(R.id.txtPercentage);
+        setContentView(R.layout.subir_multimedia_a_servidor);
+        //txtPercentage = (TextView) findViewById(R.id.txtPercentage);
+        txtComentarios = (TextView) findViewById(R.id.edtcomentarios);
         btnUpload = (Button) findViewById(R.id.btnUpload);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         imgPreview = (ImageView) findViewById(R.id.imgPreview);
         vidPreview = (VideoView) findViewById(R.id.videoPreview);
 
-        // Changing action bar background color
-        //getActionBar().setBackgroundDrawable( new ColorDrawable(Color.parseColor(getResources().getString(R.color.action_bar))));
-        // Receiving the data from previous activity
         Intent i = getIntent();
-        // image or video path that is captured in previous activity
         filePath = i.getStringExtra("filePath");
-        // boolean flag to identify the media type, image or video
-        boolean isImage = i.getBooleanExtra("isImage", true);
+        isImage = i.getBooleanExtra("isImage", true);
 
         if (filePath != null) {
-            // Displaying the image or video on the screen
-            previewMedia(isImage);
+            previewMedia();
         } else {
             Toast.makeText(getApplicationContext(),
-                    "Sorry, file path is missing!", Toast.LENGTH_LONG).show();
+                    "Lo siento, ruta de archivo perdida!", Toast.LENGTH_LONG).show();
         }
 
         btnUpload.setOnClickListener(new View.OnClickListener() {
-
             @Override
             public void onClick(View v) {
                 file = new File(filePath);
-                // uploading the file to server
-                new UploadFileToServer().execute();
+                if (isImage) {
+                    if (file.length() <= 10000000) //permite imagenes menores a 10 megas
+                    {
+                        new UploadFileToServer().execute();
+                    } else {
+                        showAlert("El tamaño maximo de las imagenes es de 10 Megas, Intente con otra foto");
+                    }
+                }else{
+                    if (file.length() <= 40000000) //permite videos menores a 30 megas
+                    {
+                        new UploadFileToServer().execute();
+                    } else {
+                        showAlert("El tamaño maximo de los videos es de 40 Megas, Intente con otro video");
+                    }
+                }
             }
         });
-
     }
 
 
-
-    private void previewMedia(boolean isImage) {
+    private void previewMedia() {
         // Checking whether captured media is image or video
         if (isImage) {
             imgPreview.setVisibility(View.VISIBLE);
             vidPreview.setVisibility(View.GONE);
-            // bimatp factory
             BitmapFactory.Options options = new BitmapFactory.Options();
-
-            // down sizing image as it throws OutOfMemory Exception for larger
-            // images
+            // down sizing image as it throws OutOfMemory Exception for larger images
             options.inSampleSize = 8;
-
             final Bitmap bitmap = BitmapFactory.decodeFile(filePath, options);
-
             imgPreview.setImageBitmap(bitmap);
         } else {
             imgPreview.setVisibility(View.GONE);
             vidPreview.setVisibility(View.VISIBLE);
             vidPreview.setVideoPath(filePath);
-            // start playing
             vidPreview.start();
         }
     }
 
 
-    /**
-     * Uploading the file to server
-     * */
+
     private class UploadFileToServer extends AsyncTask<Void, Integer, String> {
         @Override
         protected void onPreExecute() {
@@ -135,12 +134,11 @@ public class AcitividadSubidaMultimedia extends Activity {
         protected void onProgressUpdate(Integer... progress) {
             // Making progress bar visible
             progressBar.setVisibility(View.VISIBLE);
-
             // updating progress bar value
             progressBar.setProgress(progress[0]);
-
             // updating percentage value
-            txtPercentage.setText(String.valueOf(progress[0]) + "%");
+            btnUpload.setText("Cargando (" + String.valueOf(progress[0]) + "%)");
+            //txtPercentage.setText(String.valueOf(progress[0]) + "%");
         }
 
         @Override
@@ -157,11 +155,10 @@ public class AcitividadSubidaMultimedia extends Activity {
                 HttpClient httpclient = new DefaultHttpClient();
                 HttpPost httppost = new HttpPost(Config.FILE_UPLOAD_URL);
 
-                Log.i("UploadApp", "upload url: " + Config.FILE_UPLOAD_URL);
+                Log.i("SubidaApp", "url de subida: " + Config.FILE_UPLOAD_URL);
 
 
-                AndroidMultiPartEntity entity;
-                entity = new AndroidMultiPartEntity(
+                AndroidMultiPartEntity entity = new AndroidMultiPartEntity(
                         new ProgressListener() {
 
                             @Override
@@ -170,19 +167,13 @@ public class AcitividadSubidaMultimedia extends Activity {
                             }
                         });
 
-                File sourceFile;
-                sourceFile = new File(filePath);
-
-                Log.i("UploadApp", "file path: " + filePath);
-
+                File sourceFile = new File(filePath);
                 // Adding file data to http body
                 entity.addPart("image", new FileBody(sourceFile));
-
-                // Extra parameters if you want to pass to server
-                entity.addPart("website",
-                        new StringBody("dnugent.nicewebsite.info"));
-                entity.addPart("email", new StringBody("skatesf@gmail.com"));
-
+                entity.addPart("usuario",  new StringBody(Config.UsuarioPerfil));
+                entity.addPart("correo",  new StringBody(Config.CorreoPerfil));
+                entity.addPart("celular", new StringBody(Config.CelularPerfil));
+                entity.addPart("comentarios", new StringBody(txtComentarios.getText().toString()));
                 totalSize = entity.getContentLength();
                 httppost.setEntity(entity);
 
@@ -192,47 +183,44 @@ public class AcitividadSubidaMultimedia extends Activity {
 
                 int statusCode = response.getStatusLine().getStatusCode();
                 if (statusCode == 200) {
-                    // Server response
-                    responseString = EntityUtils.toString(r_entity);
+                    responseString = "Se ha subido el archivo correctamente, gracias " + Config.UsuarioPerfil + " por compartirlo.";
+                    //responseString = EntityUtils.toString(r_entity);
                 } else {
-                    responseString = "Error occurred! Http Status Code: "
-                            + statusCode;
+                    responseString = "Ha ocurrido un error. Por favor intente de nuevo.";
                 }
 
             } catch (ClientProtocolException e) {
-                responseString = e.toString();
-                Log.e("UploadApp", "exception: " + responseString);
+                responseString = "Ha ocurrido un error. Por favor intente de nuevo.";
             } catch (IOException e) {
-                responseString = e.toString();
-                Log.e("UploadApp", "exception: " + responseString);
+                responseString = "Problemas de conexión con el servidor. No hay transferencia de datos."; //e.toString();
             }
-
             return responseString;
-
         }
 
         @Override
         protected void onPostExecute(String result) {
-            Log.e(TAG, "Response from server: " + result);
+            /*String Resultadopos;
+            try {
+                JSONObject obj = new JSONObject(result);
+                Resultadopos = obj.get("usuario").toString();
 
-            // showing the server response in an alert dialog
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }*/
             showAlert(result);
-
             super.onPostExecute(result);
         }
 
     }
 
-    /**
-     * Method to show alert dialog
-     * */
+
     private void showAlert(String message) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(message).setTitle("Response from Servers")
+        builder.setMessage(message).setTitle("Archivo Multimedia")
                 .setCancelable(false)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                .setPositiveButton("Listo", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        // do nothing
+                        finish();
                     }
                 });
         AlertDialog alert = builder.create();

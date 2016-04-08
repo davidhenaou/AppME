@@ -1,10 +1,7 @@
 package com.dhenao.miestadio;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.DialogInterface;
@@ -15,8 +12,6 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.media.ExifInterface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -31,70 +26,43 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.webkit.MimeTypeMap;
-import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.dhenao.miestadio.data.JSONParser;
-import com.dhenao.miestadio.data.ListAdapterMultimedia;
+import com.dhenao.miestadio.pantallas.MinutoaMinuto;
 import com.dhenao.miestadio.system.ActividadConfiguracion;
 import com.dhenao.miestadio.system.Config;
 import com.dhenao.miestadio.system.autenticacion.LogueoActivity;
-import com.dhenao.miestadio.system.sync.AcitividadSubidaMultimedia;
-import com.dhenao.miestadio.system.sync.UploadActivity;
+import com.dhenao.miestadio.pantallas.SubirMultimediaaSevidor;
 import com.dhenao.miestadio.ui.CargaContenido;
 import com.dhenao.miestadio.ui.CargarContenidoViewPager;
 import com.dhenao.miestadio.ui.MultiTouchActivity;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.SocketException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
-
-//import com.dhenao.miestadio.system.sync.Autenticacion;
 
 public class ActividadPrincipal extends AppCompatActivity {
     private DrawerLayout drawerLayout; //del menu principal
 
     /***para la carga de imagenes***/
-    // LogCat tag
     private static final String TAG = ActividadPrincipal.class.getSimpleName();
-    // Camera activity request codes
     private static final int CAPTURA_CAMARA_IMAGEN_CODIGO_RESPUESTA = 100;
     private static final int CAPTURA_BIBLIOTECA_IMAGEN_CODIGO_RESPUESTA = 101;
     private static final int CAPTURA_CAMARA_VIDEO_CODIGO_RESPUESTA = 200;
@@ -110,34 +78,10 @@ public class ActividadPrincipal extends AppCompatActivity {
     public Uri uriCaptura;
 
     /*** para el refresco de listas*/
-    private RecyclerView recycler;
+    /*private RecyclerView recycler;
     private ListAdapterMultimedia adapter;
     private RecyclerView.LayoutManager lManager;
-    private SwipeRefreshLayout refreshLayout;
-
-    /*para el nombre del perfil y los datos de el*/
-    public String UsuarioPerfil;
-    public String CorreoPerfil;
-    public String CelularPerfil;
-
-    /*para el webservice*/
-    // Progress Dialog
-    private ProgressDialog pDialog;
-    // Creating JSON Parser object
-    JSONParser jParser = new JSONParser();
-    ArrayList<HashMap<String, String>> empresaList;
-    // url to get all euiqpos list
-    private static String url_info_equipos = "http://losurreas.eshost.com.ar/app/obtener_equipos.php";
-    // JSON Node names
-    private static final String TAG_ESTADO = "estado";
-    private static final String TAG_EQUIPOS = "equipos";
-    private static final String TAG_TITULO = "titulo";
-    private static final String TAG_DETALLE = "detalle";
-
-    // equipos JSONArray
-    JSONArray equipos = null;
-    public ListView lista;
-
+    private SwipeRefreshLayout refreshLayout;*/
 
 
     @Override
@@ -145,7 +89,8 @@ public class ActividadPrincipal extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         Log.v("inicio app", "Start");
 
-        setContentView(R.layout.menu_deslizante_y_contenido); agregarToolbar();
+        setContentView(R.layout.menu_deslizante_y_contenido);
+        agregarToolbar();
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout); //menu deslizante
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
 
@@ -156,7 +101,7 @@ public class ActividadPrincipal extends AppCompatActivity {
         }
 
         CargarPerfil();
-        if ( TextUtils.isEmpty(UsuarioPerfil) || TextUtils.isEmpty(CorreoPerfil) || TextUtils.isEmpty(CelularPerfil)) {
+        if ( TextUtils.isEmpty(Config.UsuarioPerfil) || TextUtils.isEmpty(Config.CorreoPerfil) || TextUtils.isEmpty(Config.CelularPerfil)) {
             Intent intent = new Intent(this, LogueoActivity.class);
             startActivityForResult(intent, 1234);
         }
@@ -196,9 +141,9 @@ public class ActividadPrincipal extends AppCompatActivity {
 
     public void CargarPerfil() {
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(ActividadPrincipal.this);
-        UsuarioPerfil = pref.getString("UsuarioPref", "").trim();
-        CorreoPerfil = pref.getString("CorreoPref", "").trim();
-        CelularPerfil = pref.getString("CelularPref", "").trim();
+        Config.UsuarioPerfil = pref.getString("UsuarioPref", "").trim();
+        Config.CorreoPerfil = pref.getString("CorreoPref", "").trim();
+        Config.CelularPerfil = pref.getString("CelularPref", "").trim();
         String rutaImagenperf = pref.getString("ImagenPerf", "").trim();
 
         TextView edtUsuarioPerfil = (TextView) findViewById(R.id.perfil_usuario);
@@ -206,9 +151,9 @@ public class ActividadPrincipal extends AppCompatActivity {
         TextView edtCelularPerfil = (TextView) findViewById(R.id.perfil_celular);
         ImageView imagenPerfil = (ImageView) findViewById(R.id.icono_miperfil);
 
-        edtUsuarioPerfil.setText(UsuarioPerfil);
-        edtCorreoPerfil.setText(CorreoPerfil);
-        edtCelularPerfil.setText(CelularPerfil);
+        edtUsuarioPerfil.setText(Config.UsuarioPerfil);
+        edtCorreoPerfil.setText(Config.CorreoPerfil);
+        edtCelularPerfil.setText(Config.CelularPerfil);
         if (!TextUtils.isEmpty(rutaImagenperf)){
             File imgFile = new File(rutaImagenperf);
             Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
@@ -241,18 +186,6 @@ public class ActividadPrincipal extends AppCompatActivity {
         switch (requestCode) {
             case CAPTURA_CAMARA_IMAGEN_CODIGO_RESPUESTA: //si viene de la captura de foto para multimedia
                 if(resultCode == RESULT_OK){
-                    /*fileUri = Uri.parse(fileUri.toString().substring(7,fileUri.toString().length()));
-                    fileFotoCaptura = new File( fileUri.toString() );
-                    Bitmap imagentemp = rotarImagen(fileFotoCaptura);
-                    File file = getOutputMediaFile(MEDIA_TYPE_IMAGE);
-                    try {
-                        OutputStream os = new BufferedOutputStream(new FileOutputStream(file));
-                        imagentemp.compress(Bitmap.CompressFormat.JPEG, 100, os);
-                        os.close();
-                    }  catch (Exception e) {
-                        Log.e("ERROR ", "Error:" + e);
-                    }
-                    fileUri = Uri.parse("file://" + file.toString());*/
                     lanzarSubirImagenWeb(true);
                 }else if (resultCode == RESULT_CANCELED) {
                     Toast.makeText(getApplicationContext(),"El usuario ha cancelado la captura", Toast.LENGTH_SHORT).show();
@@ -380,7 +313,7 @@ public class ActividadPrincipal extends AppCompatActivity {
 
 
     private void lanzarSubirImagenWeb(boolean isImage){
-        Intent i = new Intent(ActividadPrincipal.this, AcitividadSubidaMultimedia.class);
+        Intent i = new Intent(ActividadPrincipal.this, SubirMultimediaaSevidor.class);
         i.putExtra("filePath", fileUri.getPath());
         i.putExtra("isImage", isImage);
         startActivity(i);
@@ -460,7 +393,7 @@ public class ActividadPrincipal extends AppCompatActivity {
                 finish();
                 break;
         }
-        /* consulta para llamar los equipos
+        /* consulta para llamar los Equipos
         new CargarLosEquipos().execute();
         */
         //fragmentoGenerico = FragmentoPestanas.nuevaInstancia(1,1);
@@ -706,13 +639,13 @@ public class ActividadPrincipal extends AppCompatActivity {
 
         // External sdcard location
         File mediaStorageDir = new File(
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), Config.IMAGE_DIRECTORY_NAME);
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), Config.IMAGE_DIRECTORY_NAME_LOCAL);
 
         // Create the storage directory if it does not exist
         if (!mediaStorageDir.exists()) {
             if (!mediaStorageDir.mkdirs()) {
                 Log.d(TAG, "Oops! Failed create "
-                        + Config.IMAGE_DIRECTORY_NAME + " directory");
+                        + Config.IMAGE_DIRECTORY_NAME_LOCAL + " directory");
                 return null;
             }
         }
@@ -732,6 +665,15 @@ public class ActividadPrincipal extends AppCompatActivity {
         }
 
         return mediaFile;
+    }
+
+
+
+    /*todas las llamadas a otras ventanas de contenido*/
+
+    public void clickMinutoAminuto(View target) { //para cargar la ventana de minuto a minuto
+        Intent i = new Intent(ActividadPrincipal.this, MinutoaMinuto.class );
+        startActivity(i);
     }
 
 }
