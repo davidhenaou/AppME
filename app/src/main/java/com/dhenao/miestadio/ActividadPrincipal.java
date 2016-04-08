@@ -3,6 +3,7 @@ package com.dhenao.miestadio;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.DialogInterface;
@@ -18,7 +19,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -40,7 +40,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.dhenao.miestadio.data.MySql.ConsultaMySql;
+import com.dhenao.miestadio.data.MySql.RefrescarObjetos;
 import com.dhenao.miestadio.pantallas.MinutoaMinuto;
 import com.dhenao.miestadio.system.ActividadConfiguracion;
 import com.dhenao.miestadio.system.Config;
@@ -71,6 +71,8 @@ public class ActividadPrincipal extends AppCompatActivity {
     private static final int CAPTURA_BIBLIOTECA_IMAGEN_CODIGO_RESPUESTA = 101;
     private static final int CAPTURA_CAMARA_VIDEO_CODIGO_RESPUESTA = 200;
     private static final int CAPTURA_BIBLIOTECA_VIDEO_CODIGO_RESPUESTA = 201;
+    private static final int CAPTURA_IMAGEN_PERFIL_CODIGO_RESPUESTA = 110;
+    private static final int RECORTA_IMAGEN_CODIGO_RESPUESTA = 300;
     public static final int MEDIA_TYPE_IMAGE = 1;
     public static final int MEDIA_TYPE_VIDEO = 2;
     private Uri fileUri; // file url to store image/video
@@ -81,12 +83,10 @@ public class ActividadPrincipal extends AppCompatActivity {
     public File fileFotoCaptura;
     public Uri uriCaptura;
 
-
     /*para los cuadros de dialogo*/
     private ProgressDialog pDialog;
 
-    //Variable para jugar con la consulta de MySql que se esta haciendo
-    public static int ConsultaMySql = 0;
+    RefrescarObjetos refrecoObjetos;
 
     /*** para el refresco de listas*/
     /*private RecyclerView recycler;
@@ -95,51 +95,41 @@ public class ActividadPrincipal extends AppCompatActivity {
     private SwipeRefreshLayout refreshLayout;*/
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.v("inicio app", "Start");
+        refrecoObjetos = new RefrescarObjetos();
 
         setContentView(R.layout.menu_deslizante_y_contenido);
         agregarToolbar();
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout); //menu deslizante
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view); //navegador
+        ImageView imagenPerfil = (ImageView) findViewById(R.id.icono_miperfil); //imagen de perfil
 
         if (navigationView != null) {
             prepararDrawer(navigationView);
-            // Seleccionar item por defecto el que inicia
-            seleccionarItem(navigationView.getMenu().getItem(0));
-            ConsultaMySql = 1;
-            new ConsultaMysql().execute();
+            //seleccionarItem(navigationView.getMenu().getItem(0)); // Seleccionar item por defecto el que inicia
+            refrecoObjetos.CargaPerfil(ActividadPrincipal.this); //CargarPerfil();
         }
 
-        CargarPerfil();
         if ( TextUtils.isEmpty(Config.UsuarioPerfil) || TextUtils.isEmpty(Config.CorreoPerfil) || TextUtils.isEmpty(Config.CelularPerfil)) {
             Intent intent = new Intent(this, LogueoActivity.class);
             startActivityForResult(intent, 1234);
         }
 
-
-        ImageView imagenPerfil = (ImageView) findViewById(R.id.icono_miperfil);
-        imagenPerfil.setOnClickListener(new View.OnClickListener() { //capturar imagen de perfil
+        //capturar imagen de perfil
+        imagenPerfil.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                rutafotos.mkdirs();
+                captureMultimedia(5);
+                /*rutafotos.mkdirs();
                 fileFotoCaptura = new File(ruta_temp + "miestadioperfil.jpg");
-                try {
-                    fileFotoCaptura.createNewFile();
-                } catch (IOException ex) {
-                    Log.e("ERROR ", "Error:" + ex);
-                }
-                //uriCaptura = Uri.fromFile(fileFotoCaptura);
+                try { fileFotoCaptura.createNewFile(); } catch (IOException ex) { Log.e("ERROR ", "Error:" + ex); }
                 Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(fileFotoCaptura));
-                //Retorna a la actividad
-                startActivityForResult(cameraIntent, 110);
-                //el resultado se debe optener del activity result
+                startActivityForResult(cameraIntent, CAPTURA_IMAGEN_PERFIL_CODIGO_RESPUESTA);*/
             }
         });
-
 
         /*NO BORRAR funciona... configuracion del boton flotante*/
         /*FloatingActionButton botonflotante = (FloatingActionButton) findViewById(R.id.botonflotante);
@@ -150,29 +140,6 @@ public class ActividadPrincipal extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });*/
-    }
-
-
-    public void CargarPerfil() {
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(ActividadPrincipal.this);
-        Config.UsuarioPerfil = pref.getString("UsuarioPref", "").trim();
-        Config.CorreoPerfil = pref.getString("CorreoPref", "").trim();
-        Config.CelularPerfil = pref.getString("CelularPref", "").trim();
-        String rutaImagenperf = pref.getString("ImagenPerf", "").trim();
-
-        TextView edtUsuarioPerfil = (TextView) findViewById(R.id.perfil_usuario);
-        TextView edtCorreoPerfil = (TextView) findViewById(R.id.perfil_correo);
-        TextView edtCelularPerfil = (TextView) findViewById(R.id.perfil_celular);
-        ImageView imagenPerfil = (ImageView) findViewById(R.id.icono_miperfil);
-
-        edtUsuarioPerfil.setText(Config.UsuarioPerfil);
-        edtCorreoPerfil.setText(Config.CorreoPerfil);
-        edtCelularPerfil.setText(Config.CelularPerfil);
-        if (!TextUtils.isEmpty(rutaImagenperf)){
-            File imgFile = new File(rutaImagenperf);
-            Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-            imagenPerfil.setImageBitmap(myBitmap);
-        }
     }
 
 
@@ -201,9 +168,9 @@ public class ActividadPrincipal extends AppCompatActivity {
                 if(resultCode == RESULT_OK){
                     lanzarSubirImagenWeb(true);
                 }else if (resultCode == RESULT_CANCELED) {
-                    Toast.makeText(getApplicationContext(),"El usuario ha cancelado la captura", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "El usuario ha cancelado la captura", Toast.LENGTH_SHORT).show();
                 } else {
-                     Toast.makeText(getApplicationContext(),"Lo siento, fallo en la captura", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Lo siento, fallo en la captura", Toast.LENGTH_SHORT).show();
                 }
                 break;
 
@@ -261,17 +228,34 @@ public class ActividadPrincipal extends AppCompatActivity {
                 }
                 break;
 
-            case 110: //capturar imagen de perfil
+            case CAPTURA_IMAGEN_PERFIL_CODIGO_RESPUESTA: //capturar imagen de perfil
                 if(resultCode == RESULT_OK) {
                     Bitmap imagentemp = rotarImagen(fileFotoCaptura);
+                    //recortarImagen(Uri.fromFile(fileFotoCaptura));
                     String rutaimagen = guardarImagenRutaApp(getApplicationContext(), "imagenperfil", imagentemp);
                     SharedPreferences pref = getApplicationContext().getSharedPreferences("com.dhenao.miestadio_preferences", 0);
                     SharedPreferences.Editor editor = pref.edit();
                     editor.putString("ImagenPerf", rutaimagen);
                     editor.commit();
-                    CargarPerfil();
+                    refrecoObjetos.CargaPerfil(ActividadPrincipal.this); //CargarPerfil();
                 }
                 break;
+
+            case RECORTA_IMAGEN_CODIGO_RESPUESTA: //recorto la imagen
+                Bundle extras = data.getExtras();
+                Bitmap imagenRecortada = extras.getParcelable("data");
+                fileFotoCaptura = new File(ruta_temp + "miestadioperfil.jpg");
+                //fileFotoCaptura.createNewFile();
+
+                String rutaimagen = guardarImagenRutaApp(getApplicationContext(), "imagenperfil", imagenRecortada);
+                SharedPreferences pref = getApplicationContext().getSharedPreferences("com.dhenao.miestadio_preferences", 0);
+                SharedPreferences.Editor editor = pref.edit();
+                editor.putString("ImagenPerf", rutaimagen);
+                editor.commit();
+                refrecoObjetos.CargaPerfil(ActividadPrincipal.this); //CargarPerfil();
+
+                break;
+
 
             case 1234: //si viene del logueo
                 if (resultCode == RESULT_CANCELED){
@@ -292,8 +276,26 @@ public class ActividadPrincipal extends AppCompatActivity {
                     });
                     dialogo1.show();
                 }
-                CargarPerfil();
+                refrecoObjetos.CargaPerfil(ActividadPrincipal.this); //CargarPerfil();
                 break;
+        }
+    }
+
+
+    private void recortarImagen(Uri uriarchivo){
+        try {
+            Intent cropIntent = new Intent("com.android.camera.action.CROP");
+            cropIntent.setDataAndType(uriarchivo, "image/*");
+            cropIntent.putExtra("crop", "true");
+            cropIntent.putExtra("aspectX", 1);
+            cropIntent.putExtra("aspectY", 1);
+            cropIntent.putExtra("outputX", 256);
+            cropIntent.putExtra("outputY", 256);
+            cropIntent.putExtra("return-data", true);
+            startActivityForResult(cropIntent, RECORTA_IMAGEN_CODIGO_RESPUESTA);
+        }
+        catch(ActivityNotFoundException anfe){
+            Toast.makeText(getApplicationContext(), "Upsss.... tu dispositivo no puede recortar la imagen!" , Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -332,32 +334,7 @@ public class ActividadPrincipal extends AppCompatActivity {
         startActivity(i);
     }
 
-/* para el menu contextual.... no borrar
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        super.onCreateContextMenu(menu, v, menuInfo);
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu_multimediacontext, menu);
-    }
 
-    @Override
-    public boolean onContextItemSelected(MenuItem item) {
-        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        switch (item.getItemId()) {
-            case R.id.mult_tomarfoto:
-                Toast.makeText(getApplicationContext(), "selecciono tomar foto" , Toast.LENGTH_SHORT).show();
-                return true;
-            case R.id.mult_subirfoto:
-                Toast.makeText(getApplicationContext(), "selecciono subir foto" , Toast.LENGTH_SHORT).show();
-                return true;
-            case R.id.mult_cancelarfoto:
-                Toast.makeText(getApplicationContext(), "selecciono cancelar" , Toast.LENGTH_SHORT).show();
-                return true;
-            default:
-                return super.onContextItemSelected(item);
-        }
-    }
-*/
 
 
     private void seleccionarItem(MenuItem itemDrawer) {
@@ -381,22 +358,12 @@ public class ActividadPrincipal extends AppCompatActivity {
                 break;
             case R.id.nav_4:
 
-                /*
-                Intent in = new Intent(this, LogueoActivity.class );
-                startActivity(in);
-                finish();
-                */
-
-
                 break;
             case R.id.nav_5:
 
                 break;
             case R.id.nav_6:
-                boolean conex = verificaConexion();
-                if (conex){
-                    fragmentoGenerico = CargarContenidoViewPager.nuevaInstancia(2, 4);
-                }
+
                 break;
             case R.id.nav_7:
                 Intent i = new Intent(this, CargaContenido.class );
@@ -406,10 +373,6 @@ public class ActividadPrincipal extends AppCompatActivity {
                 finish();
                 break;
         }
-        /* consulta para llamar los Equipos
-        new CargarLosEquipos().execute();
-        */
-        //fragmentoGenerico = FragmentoPestanas.nuevaInstancia(1,1);
 
         if (fragmentoGenerico != null) {
             fragmentManager.beginTransaction().replace(R.id.contenedor_principal, fragmentoGenerico).commit();
@@ -428,12 +391,10 @@ public class ActividadPrincipal extends AppCompatActivity {
 
             case R.id.mult_tomarfoto:
                 captureMultimedia(1);
-                //abrirCamara();
                 return true;
 
             case R.id.mult_subirfoto:
                 captureMultimedia(2);
-                //abrirMultimedia();
                 return true;
 
             case R.id.mult_tomarvideo:
@@ -481,6 +442,15 @@ public class ActividadPrincipal extends AppCompatActivity {
                     intent.setType("video/*");
                     startActivityForResult(intent.createChooser(intent, "Con que abrira el video?"), CAPTURA_BIBLIOTECA_VIDEO_CODIGO_RESPUESTA);
                     break;
+
+                case 5: //capturar imagen de perfil
+                    rutafotos.mkdirs();
+                    fileFotoCaptura = new File(ruta_temp + "miestadioperfil.jpg");
+                    try { fileFotoCaptura.createNewFile(); } catch (IOException ex) { Log.e("ERROR ", "Error:" + ex); }
+                    Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(fileFotoCaptura));
+                    startActivityForResult(cameraIntent, CAPTURA_IMAGEN_PERFIL_CODIGO_RESPUESTA);
+                    break;
             }
         } else {
             Toast.makeText(getApplicationContext(), "Tu camara no esta lista!!!", Toast.LENGTH_LONG).show();
@@ -497,31 +467,6 @@ public class ActividadPrincipal extends AppCompatActivity {
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         fileUri = savedInstanceState.getParcelable("file_uri"); // get the file url
-    }
-
-
-    public void abrirCamara(){
-        //Si no existe crea la carpeta donde se guardaran las fotos
-        rutafotos.mkdirs();
-        fileFotoCaptura = new File( ruta_temp + "miestadiotemp" + tomarFechayhora() + ".jpg" );
-        try {
-            fileFotoCaptura.createNewFile();
-        } catch (IOException ex) {
-            Log.e("ERROR ", "Error:" + ex);
-        }
-        uriCaptura = Uri.fromFile( fileFotoCaptura );
-        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriCaptura);
-        //Retorna a la actividad
-        startActivityForResult(cameraIntent, 100);
-        //el resultado se debe optener del activity result
-    }
-
-
-    public void abrirMultimedia(){
-        Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        intent.setType("image/*");
-        startActivityForResult(intent.createChooser(intent, "Selecciona app de imagen"), 101);
     }
 
 
@@ -610,17 +555,6 @@ public class ActividadPrincipal extends AppCompatActivity {
     }
 
 
-    private boolean verificaConexion(){
-        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-        if (networkInfo != null && networkInfo.isConnected()) {
-            Toast.makeText(this, "con conexion", Toast.LENGTH_SHORT).show();
-            return true;
-        } else {
-            Toast.makeText(this, "sin conexion", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-    }
 
     //LO USO CUANDO NECESITO UN STRING DE FECHA Y HORA
     @SuppressLint("SimpleDateFormat")
@@ -694,65 +628,29 @@ public class ActividadPrincipal extends AppCompatActivity {
 
 
 
-
-
-
     /*tarea que hace la consulta a mysql*/
-    class ConsultaMysql extends AsyncTask<String,String,String> {
+    /*
+    class TareaAsincronicaMySql extends AsyncTask<String,String,String> {
         String mensajeProgress;
-        /*
-        String equipoJson1, equipoJson2;
-        String descripcionJson1, descripcionJson2;
-        String imagenJson1, imagenJson2;
-        */
+        ConsultaMySql consultaMsql;
+        RefrescarObjetos refrecoObjetos;
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            if(ConsultaMySql==1) mensajeProgress="Cargando Informacion de Minuto A Minuto";
+            if(pQuemoduloConsulta==1) mensajeProgress="Cargando Informacion de Minuto A Minuto";
 
             pDialog = new ProgressDialog(ActividadPrincipal.this);
             pDialog.setMessage(mensajeProgress + ", Por favor espere...");
             pDialog.setIndeterminate(false);
             pDialog.setCancelable(false);
-
-            if(ConsultaMySql==1) pDialog.show();
+            if(pConsultarMySql) pDialog.show();
         }
-
 
         protected String doInBackground(String... args) {
-            ConsultaMySql consultaMsql = new ConsultaMySql(ConsultaMySql);
-            /*List<NameValuePair> params = new ArrayList<NameValuePair>();
-            JSONParser jParser = new JSONParser();
-            JSONObject json = jParser.makeHttpRequest(Config.URL_MYSQL_EQUIPOS, "GET", params);
-            Log.d("Los Equipos: ", json.toString());
-
-            try {
-                // chequeando estado
-                int estado = json.getInt("estado");
-                if (estado == 1) {
-                    // equipos encontrados
-                    JSONArray equiposJson = json.getJSONArray("equipos");
-                    JSONObject c;
-                    c = equiposJson.getJSONObject(0);
-                    equipoJson1 = c.getString("equipo");
-                    descripcionJson1 = c.getString("descripcion");
-                    imagenJson1 = c.getString("imagen");
-
-                    c = equiposJson.getJSONObject(1);
-                    equipoJson2 = c.getString("equipo");
-                    descripcionJson2 = c.getString("descripcion");
-                    imagenJson2 = c.getString("imagen");
-
-                } else {
-                    // no equipos encontrados
-                    Log.d("no encontro equipos: ", json.toString());
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }*/
+            consultaMsql = new ConsultaMySql(pQuemoduloConsulta,pConsultarMySql);
             return null;
         }
-
 
         protected void onPostExecute(String file_url) {
             //desaparezco el cuadro de dialogo
@@ -760,14 +658,66 @@ public class ActividadPrincipal extends AppCompatActivity {
 
             runOnUiThread(new Runnable() {
                 public void run() {
-                    TextView txtequipo1 = (TextView) findViewById(R.id.nombreequipo1);
-                    TextView txtequipo2 = (TextView) findViewById(R.id.nombreequipo2);
-                    txtequipo1.setText(Config.pEquipo1NombreMaM);
-                    txtequipo2.setText(Config.pEquipo2NombreMaM);
+                    refrecoObjetos = new RefrescarObjetos(pResfreconInstantaneo, pQuemoduloConsulta, ActividadPrincipal.this);
+                    //consultaMsql.ResfrescarInformacion(pResfreconInstantaneo, pQuemoduloConsulta, ActividadPrincipal.this);
                 }
             });
         }
+    }*/
+
+
+
+    /* para el menu contextual.... no borrar
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_multimediacontext, menu);
     }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        switch (item.getItemId()) {
+            case R.id.mult_tomarfoto:
+                Toast.makeText(getApplicationContext(), "selecciono tomar foto" , Toast.LENGTH_SHORT).show();
+                return true;
+            case R.id.mult_subirfoto:
+                Toast.makeText(getApplicationContext(), "selecciono subir foto" , Toast.LENGTH_SHORT).show();
+                return true;
+            case R.id.mult_cancelarfoto:
+                Toast.makeText(getApplicationContext(), "selecciono cancelar" , Toast.LENGTH_SHORT).show();
+                return true;
+            default:
+                return super.onContextItemSelected(item);
+        }
+    }
+    */
+
+
+    /*
+    public void CargarPerfil() {
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(ActividadPrincipal.this);
+        Config.UsuarioPerfil = pref.getString("UsuarioPref", "").trim();
+        Config.CorreoPerfil = pref.getString("CorreoPref", "").trim();
+        Config.CelularPerfil = pref.getString("CelularPref", "").trim();
+        String rutaImagenperf = pref.getString("ImagenPerf", "").trim();
+
+        TextView edtUsuarioPerfil = (TextView) findViewById(R.id.perfil_usuario);
+        TextView edtCorreoPerfil = (TextView) findViewById(R.id.perfil_correo);
+        TextView edtCelularPerfil = (TextView) findViewById(R.id.perfil_celular);
+        ImageView imagenPerfil = (ImageView) findViewById(R.id.icono_miperfil);
+
+        edtUsuarioPerfil.setText(Config.UsuarioPerfil);
+        edtCorreoPerfil.setText(Config.CorreoPerfil);
+        edtCelularPerfil.setText(Config.CelularPerfil);
+        if (!TextUtils.isEmpty(rutaImagenperf)){
+            File imgFile = new File(rutaImagenperf);
+            Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+            imagenPerfil.setImageBitmap(myBitmap);
+        }
+    }
+    */
 
 }
 
