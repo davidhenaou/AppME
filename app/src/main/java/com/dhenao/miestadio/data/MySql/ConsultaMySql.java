@@ -47,11 +47,11 @@ public class ConsultaMySql {
                 try {
                     JSONObject json = jParser.makeHttpRequest(Config.URL_MYSQL_EQUIPOS, "GET", params);
                     if (json != null) {
-                        Log.d("Los Equipos: ", json.toString());
 
                         // chequeando estado
                         int estado = json.getInt("estado");
                         if (estado == 1) {
+                            Log.d("Los Equipos: ", json.toString());
                             // equipos encontrados
                             JSONArray equiposJson = json.getJSONArray("equipos");
                             JSONObject c;

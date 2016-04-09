@@ -3,7 +3,6 @@ package com.dhenao.miestadio;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.DialogInterface;
@@ -15,13 +14,10 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 
 import android.os.Bundle;
 import android.os.Environment;
-import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -37,10 +33,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dhenao.miestadio.data.MySql.RefrescarObjetos;
+import com.dhenao.miestadio.data.SQlite.DatabaseHandler;
+import com.dhenao.miestadio.data.SQlite.EquipoFutbol;
 import com.dhenao.miestadio.pantallas.MinutoaMinuto;
 import com.dhenao.miestadio.system.ActividadConfiguracion;
 import com.dhenao.miestadio.system.Config;
@@ -59,6 +56,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class ActividadPrincipal extends AppCompatActivity {
@@ -107,6 +105,7 @@ public class ActividadPrincipal extends AppCompatActivity {
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view); //navegador
         ImageView imagenPerfil = (ImageView) findViewById(R.id.icono_miperfil); //imagen de perfil
 
+
         if (navigationView != null) {
             prepararDrawer(navigationView);
             seleccionarItem(navigationView.getMenu().getItem(0)); // Seleccionar item por defecto el que inicia
@@ -117,6 +116,19 @@ public class ActividadPrincipal extends AppCompatActivity {
             Intent intent = new Intent(this, LogueoActivity.class);
             startActivityForResult(intent, 1234);
         }
+
+        /*para la base de datos SQlite*/
+        DatabaseHandler db = new DatabaseHandler(this);
+        db.addEquipo(new EquipoFutbol("David","esta es una prueba","la imagen"));
+        db.addEquipo(new EquipoFutbol("Juliet","otra prueba","la mas linda"));
+        List<EquipoFutbol> equipos = db.getAllEquipos();
+        for (EquipoFutbol cn : equipos) {
+            String log = "Id: "+cn.getID()+" ,Nombre: " + cn.getNombre() + " ,Descripcion: " + cn.getDescripcion() + " ,Imagen: " + cn.getImagen();
+            Log.d("Nombre: ", log);
+        }
+        /**/
+
+
 
         //capturar imagen de perfil
         imagenPerfil.setOnClickListener(new View.OnClickListener() {
