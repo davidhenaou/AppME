@@ -49,6 +49,7 @@ public class Splash extends Activity {
         public int trespt;
         protected String doInBackground(String... args) {
             ConsultaMySql consultaMsql = new ConsultaMySql();
+            trespt = consultaMsql.consultar(0, getApplicationContext());
             trespt = consultaMsql.consultar(1, getApplicationContext());
             return null;
         }

@@ -105,7 +105,6 @@ public class ActividadPrincipal extends AppCompatActivity {
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view); //navegador
         ImageView imagenPerfil = (ImageView) findViewById(R.id.icono_miperfil); //imagen de perfil
 
-
         if (navigationView != null) {
             prepararDrawer(navigationView);
             seleccionarItem(navigationView.getMenu().getItem(0)); // Seleccionar item por defecto el que inicia
@@ -119,6 +118,7 @@ public class ActividadPrincipal extends AppCompatActivity {
 
         /*para la base de datos SQlite*/
         DatabaseHandler db = new DatabaseHandler(this);
+        db.deleteAllEquipo();
         db.addEquipo(new EquipoFutbol("David","esta es una prueba","la imagen"));
         db.addEquipo(new EquipoFutbol("Juliet","otra prueba","la mas linda"));
         List<EquipoFutbol> equipos = db.getAllEquipos();
@@ -134,12 +134,6 @@ public class ActividadPrincipal extends AppCompatActivity {
         imagenPerfil.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 captureMultimedia(5);
-                /*rutafotos.mkdirs();
-                fileFotoCaptura = new File(ruta_temp + "miestadioperfil.jpg");
-                try { fileFotoCaptura.createNewFile(); } catch (IOException ex) { Log.e("ERROR ", "Error:" + ex); }
-                Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(fileFotoCaptura));
-                startActivityForResult(cameraIntent, CAPTURA_IMAGEN_PERFIL_CODIGO_RESPUESTA);*/
             }
         });
 
@@ -351,7 +345,7 @@ public class ActividadPrincipal extends AppCompatActivity {
 
                 break;
             case R.id.nav_5:
-
+                fragmentoGenerico = CargarContenidoViewPager.nuevaInstancia(5, 101);
                 break;
             case R.id.nav_6:
 
@@ -371,6 +365,7 @@ public class ActividadPrincipal extends AppCompatActivity {
         // Setear título actual
         setTitle(itemDrawer.getTitle());
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -402,6 +397,7 @@ public class ActividadPrincipal extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
 
     private void captureMultimedia(int tipo) {
         if (getApplicationContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
@@ -448,18 +444,19 @@ public class ActividadPrincipal extends AppCompatActivity {
         }
     }
 
+
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putParcelable("file_uri", fileUri); // save file url in bundle as it will be null on screen orientation changes
     }
 
+
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         fileUri = savedInstanceState.getParcelable("file_uri"); // get the file url
     }
-
 
 
     private String guardarImagenRutaApp (Context context, String nombre, Bitmap imagen){
@@ -481,22 +478,21 @@ public class ActividadPrincipal extends AppCompatActivity {
     }
 
 
-
     public void clickEnImagen(View target) {
         switch (target.getId()) {
             case R.id.imagenequipo1:
-                ImageView imagene = (ImageView) findViewById(R.id.imagenequipo1);
-                registerForContextMenu(imagene);
+                //ImageView imagene = (ImageView) findViewById(R.id.imagenequipo1);
+                //registerForContextMenu(imagene);
 
-                Toast.makeText(getApplicationContext(), "selecciono la imagen del equipo1" , Toast.LENGTH_SHORT).show();
-                ImageView imagen = (ImageView) findViewById(R.id.imagenresultante);
-                imagen.setBackground(target.getBackground());
+                //Toast.makeText(getApplicationContext(), "selecciono la imagen del equipo1" , Toast.LENGTH_SHORT).show();
+                //ImageView imagen = (ImageView) findViewById(R.id.imagenresultante);
+                //imagen.setBackground(target.getBackground());
                 break;
 
             case R.id.imagenequipo2:
-                Toast.makeText(getApplicationContext(), "selecciono la imagen del equipo2" , Toast.LENGTH_SHORT).show();
-                /*ImageView*/ imagen = (ImageView) findViewById(R.id.imagenresultante);
-                imagen.setBackground(target.getBackground());
+                //Toast.makeText(getApplicationContext(), "selecciono la imagen del equipo2" , Toast.LENGTH_SHORT).show();
+                /*ImageView*/ //imagen = (ImageView) findViewById(R.id.imagenresultante);
+                //imagen.setBackground(target.getBackground());
                 break;
 
             case R.id.imagenminiatura:

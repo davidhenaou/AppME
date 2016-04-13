@@ -1,4 +1,4 @@
-package com.dhenao.miestadio.ui;
+package com.dhenao.miestadio.pantallas.clases;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -7,11 +7,11 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClaseGestionTabs extends FragmentStatePagerAdapter {
+public class GestionTabs extends FragmentStatePagerAdapter {
     private final List<Fragment> fragmentos = new ArrayList<>();
     private final List<String> titulosFragmentos = new ArrayList<>();
 
-    public ClaseGestionTabs(FragmentManager fm) {
+    public GestionTabs(FragmentManager fm) {
             super(fm);
         }
 

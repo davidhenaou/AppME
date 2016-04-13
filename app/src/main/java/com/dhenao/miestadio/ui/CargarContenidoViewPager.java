@@ -13,6 +13,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.dhenao.miestadio.R;
+import com.dhenao.miestadio.pantallas.Inflates.InflateLayoutMinutoaMinuto;
+import com.dhenao.miestadio.pantallas.clases.GestionTabs;
 
 public class CargarContenidoViewPager extends Fragment{
     private AppBarLayout appBarLayout;
@@ -51,20 +53,26 @@ public class CargarContenidoViewPager extends Fragment{
 
 
     private void titulosViewPager(ViewPager viewPager, int itemMenu) {
-        ClaseGestionTabs adapter = new ClaseGestionTabs(getFragmentManager());
+        GestionTabs adapter = new GestionTabs(getFragmentManager());
 
         int nmeroItem = 0;
         switch (itemMenu) {
             case 1: //Partido (item del menu, numero de item)
-                adapter.addFragment(ClaseTabsLLenadaConLayout.nuevaInstancia(itemMenu, nmeroItem++),getString(R.string.titulo_item1_tab1));
+                adapter.addFragment(InflateLayoutMinutoaMinuto.nuevaInstancia(itemMenu, nmeroItem++),getString(R.string.titulo_item1_tab1));
                 adapter.addFragment(ClaseTabsLLenadoConListas.nuevaInstancia(itemMenu, nmeroItem++), getString(R.string.titulo_item1_tab2));
                 adapter.addFragment(ClaseTabsLLenadoConListas.nuevaInstancia(itemMenu, nmeroItem++), getString(R.string.titulo_item1_tab3));
                 break;
             case 2: //multimedia (item del menu, numero de item)
                 adapter.addFragment(ClaseTabsLLenadoConListas.nuevaInstancia(itemMenu, nmeroItem++), getString(R.string.titulo_item2_tab1));
                 adapter.addFragment(ClaseTabsLLenadoConListas.nuevaInstancia(itemMenu, nmeroItem++), getString(R.string.titulo_item2_tab2));
-
                 break;
+
+            case 5: //Partido (item del menu, numero de item)
+                adapter.addFragment(ClaseTabsLLenadaCalendarios.nuevaInstancia(itemMenu, nmeroItem++),"Liga Postobon");
+                adapter.addFragment(ClaseTabsLLenadaCalendarios.nuevaInstancia(itemMenu, nmeroItem++), "Liga Aguila");
+                break;
+
+
             case 6:
                 adapter.addFragment(ClaseTabsLLenadoConListas.nuevaInstancia(itemMenu, nmeroItem++), getString(R.string.titulo_item6_tab1));
                 adapter.addFragment(ClaseTabsLLenadoConListas.nuevaInstancia(itemMenu, nmeroItem++), getString(R.string.titulo_item6_tab2));

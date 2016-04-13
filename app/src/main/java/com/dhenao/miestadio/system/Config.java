@@ -1,5 +1,7 @@
 package com.dhenao.miestadio.system;
 
+import java.util.Date;
+
 public class Config {
 
     //configuracion de perfil
@@ -18,6 +20,11 @@ public class Config {
 
     //directorio donde reviso los equipos que juegan
     public static final String URL_MYSQL_EQUIPOS = "http://" + ipequipo + "/mysql/obtener_equipos.php";
+    public static final String URL_MYSQL_HORASYFECHASJUEGO = "http://" + ipequipo + "/mysql/obtener_informaciondejuego.php";
+    public static final String URL_MYSQL_MINUTOAMINUTO = "http://" + ipequipo + "/mysql/obtener_minutoaminuto.php";
+    public static final String URL_MYSQL_MINUTOSJUEGO = "http://" + ipequipo + "/mysql/obtener_minutos_juego.php";
+
+
 
     //informacion de minuto a minuto
     public static String pEquipo1NombreMaM = "";
@@ -27,6 +34,17 @@ public class Config {
     public static String pEquipo2NombreMaM = "";
     public static String pEquipo2DescripcionMaM = "";
     public static String pEquipo2ImagenMaM = "";
+
+    public static Date horapt;
+    public static int  repopt;
+    public static Date horast;
+    public static int  repost;
+
+    /*public static int minutosjuego = 0;
+    public static int segundosjuego = 0;*/
+
+
+
 
 
 }

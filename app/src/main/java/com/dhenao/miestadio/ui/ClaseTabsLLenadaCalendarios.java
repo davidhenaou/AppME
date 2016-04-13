@@ -15,14 +15,14 @@ import com.dhenao.miestadio.data.ListAdapterMultimedia;
 /**
  * Llenado de las pestañas
  */
-public class ClaseTabsLLenadaConLayout extends Fragment {
+public class ClaseTabsLLenadaCalendarios extends Fragment {
 
     private LinearLayout LayautDescarga;
     private GridLayoutManager layoutManager;
     private ListAdapterMultimedia adaptadorMultimedia;
 
-    public static ClaseTabsLLenadaConLayout nuevaInstancia(int itemmenu,int indiceSeccion) {
-        ClaseTabsLLenadaConLayout fragment = new ClaseTabsLLenadaConLayout();
+    public static ClaseTabsLLenadaCalendarios nuevaInstancia(int itemmenu,int indiceSeccion) {
+        ClaseTabsLLenadaCalendarios fragment = new ClaseTabsLLenadaCalendarios();
         Bundle args = new Bundle();
         args.putInt("ITEMMENU", itemmenu);
         args.putInt("INDICE", indiceSeccion);
@@ -32,7 +32,7 @@ public class ClaseTabsLLenadaConLayout extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.contenido_item1, container, false);
+        View view = inflater.inflate(R.layout.calendarios, container, false);
 
         LayautDescarga = (LinearLayout) view.findViewById(R.id.contenidoitem1);
         //layoutManager = new GridLayoutManager(getActivity(), 1); //crear layout parametro son las columnas

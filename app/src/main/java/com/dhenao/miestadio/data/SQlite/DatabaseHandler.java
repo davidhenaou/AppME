@@ -120,7 +120,15 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public void deleteEquipo(EquipoFutbol equipo) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLA_EQUIPOS, KEY_ID + " = ?",
-                new String[] { String.valueOf(equipo.getID()) });
+                new String[]{String.valueOf(equipo.getID())});
+        db.close();
+    }
+
+
+    // Deleting single EquipoFutbol
+    public void deleteAllEquipo() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("DELETE FROM " + TABLA_EQUIPOS);
         db.close();
     }
 

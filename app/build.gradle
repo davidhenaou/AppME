@@ -48,14 +48,4 @@ dependencies {
 
     compile 'com.mcxiaoke.volley:library:1.0.19'
 
-    //compile ('org.apache.httpcomponents:httpmime:4.3.6') { exclude group: 'org.apache.httpcomponents', module: 'httpclient' }
-    /*
-    compile ('org.apache.httpcomponents:httpmime:4.3.5'){
-        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
-    }
-    compile 'org.apache.httpcomponents:httpcore:4.4.1'
-    compile ('org.apache.httpcomponents:httpcore:4.4.1'){
-        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
-    }*/
-
 }

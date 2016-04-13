@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.dhenao.miestadio.R;
+import com.dhenao.miestadio.pantallas.clases.GestionTabs;
 
 public class CargarContenidoCardView extends Fragment{
     private AppBarLayout appBarLayout;
@@ -51,7 +52,7 @@ public class CargarContenidoCardView extends Fragment{
 
 
     private void poblarViewPager(ViewPager viewPager, int itemMenu) {
-        ClaseGestionTabs adapter = new ClaseGestionTabs(getFragmentManager());
+        GestionTabs adapter = new GestionTabs(getFragmentManager());
 
         int nmeroItem = 0;
         switch (itemMenu) {

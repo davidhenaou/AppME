@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/contenidoitem1"
     android:layout_width="match_parent"
@@ -35,7 +34,6 @@
                 android:layout_marginLeft="10dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="10dp"
-                android:onClick="clickEnImagen"
                 />
 
 
@@ -61,8 +59,8 @@
 
         <LinearLayout
             android:orientation="vertical"
-            android:layout_width="wrap_content"
-            android:layout_height="65dp"
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
             android:gravity="center"
             style="@style/textenObjetoRectangularOscuro"
             android:background="@drawable/objeto_rectangular_transparente"
@@ -92,7 +90,7 @@
 
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="1"
+                    android:text="19"
                     android:id="@+id/marcadorequipo1" />
 
                 <TextView
@@ -111,10 +109,37 @@
 
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="1"
+                    android:text="19"
                     android:id="@+id/marcadorequipo2" />
 
             </LinearLayout>
+
+            <TextView
+                style="@style/textenObjetoRectangularOscuro"
+                android:textAppearance="?android:attr/textAppearance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mensaje"
+                android:layout_marginTop="5dp"
+                android:id="@+id/txtpartidomensaje" />
+
+            <TextView
+                style="@style/textenObjetoRectangularOscuro"
+                android:textAppearance="?android:attr/textAppearance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mensaje1"
+                android:layout_marginTop="5dp"
+                android:id="@+id/txtpartidomensaje1" />
+
+            <Chronometer
+                style="@style/textenObjetoRectangularOscuro"
+                android:textAppearance="?android:attr/textAppearance"
+                android:layout_width="5dp"
+                android:layout_height="1dp"
+                android:id="@+id/cronometropartido"
+                android:visibility="invisible"/>
+
 
 
 
@@ -158,11 +183,28 @@
     </LinearLayout>
 
 
-
-    <ImageView
+    <android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        app:layout_scrollFlags="scroll|enterAlways"
+        android:id="@+id/swipeRefresh"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/imagenresultante"
-        android:layout_gravity="center_horizontal" />
+        android:layout_height="match_parent">
+
+    <!---ListView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+        android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".pantallas.MinutoaMinuto"
+        android:id="@+id/MinutoAMinuto"/-->
+
+        <android.support.v7.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            android:id="@+id/recicladorMinutoAMinuto"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="vertical"/>
+
+    </android.support.v4.widget.SwipeRefreshLayout>
 
 </LinearLayout>
