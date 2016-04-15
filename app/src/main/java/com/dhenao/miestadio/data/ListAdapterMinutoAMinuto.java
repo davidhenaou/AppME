@@ -1,10 +1,12 @@
 package com.dhenao.miestadio.data;
 
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -21,16 +23,24 @@ public class ListAdapterMinutoAMinuto extends RecyclerView.Adapter<ListAdapterMi
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         // Campos respectivos de un item
-        public TextView nombre;
-        public TextView descripcion;
-        public ImageView imagen;
+        public TextView txtminutoi;
+        public TextView txtminutod;
+        public TextView txttituloIzquierdo;
+        public TextView txttituloDerecho;
+        public TextView txttituloCentral;
+        public ImageView imgIzquierda;
+        public ImageView imgDerecha;
+        public LinearLayout contenedorPpal;
 
-        public ViewHolder(View v) {
-            super(v);
-
-            nombre = (TextView) v.findViewById(R.id.encabezado);
-            descripcion = (TextView) v.findViewById(R.id.destalle);
-            imagen = (ImageView) v.findViewById(R.id.imagenminiatura);
+        public ViewHolder(View v) { super(v);
+            txtminutoi = (TextView) v.findViewById(R.id.txtminutoi);
+            txtminutod = (TextView) v.findViewById(R.id.txtminutod);
+            txttituloIzquierdo = (TextView) v.findViewById(R.id.mintituloizquierdo);
+            txttituloDerecho = (TextView) v.findViewById(R.id.mintituloderecho);
+            txttituloCentral = (TextView) v.findViewById(R.id.mintitulocentral);
+            imgIzquierda = (ImageView) v.findViewById(R.id.imgIzquierda);
+            imgDerecha = (ImageView) v.findViewById(R.id.imgDerecha);
+            contenedorPpal = (LinearLayout) v.findViewById(R.id.linearRecuadro);
         }
     }
 
@@ -56,22 +66,71 @@ public class ListAdapterMinutoAMinuto extends RecyclerView.Adapter<ListAdapterMi
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
-        View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.para_lista_item, viewGroup, false);
+        View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_minutoaminuto, viewGroup, false);
         return new ViewHolder(v);
     }
 
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int i) {
+
         DatosMinutoAMinuto item = items.get(i);
+        viewHolder.txtminutoi.setText(item.getMinutoi());
+        viewHolder.txtminutod.setText(item.getMinutod());
+        String accionahacer = item.getAccion().trim();
 
-        Glide.with(viewHolder.itemView.getContext())
-                .load(item.getMultimedia1IdDrawable())
-                .centerCrop()
-                .into(viewHolder.imagen);
-        viewHolder.nombre.setText(item.getMultimedia1nombre());
-        viewHolder.descripcion.setText(item.getMultimedia());
+        viewHolder.txttituloIzquierdo.setText("");
+        viewHolder.txttituloCentral.setText("");
+        viewHolder.txttituloDerecho.setText("");
+
+        viewHolder.imgIzquierda.setVisibility(View.INVISIBLE);
+        viewHolder.imgDerecha.setVisibility(View.INVISIBLE);
+
+        viewHolder.contenedorPpal.setBackgroundColor(Color.parseColor("#FFFFFFFF"));
+
+
+
+
+        if (item.getMinutoi()=="" && item.getMinutod()==""){
+            viewHolder.contenedorPpal.setBackgroundColor(Color.parseColor("#ecdf2c"));
+            viewHolder.txttituloCentral.setText(item.getTitulo());
+        }else{
+            if (item.getMinutoi()=="") {
+                viewHolder.txttituloDerecho.setText(item.getTitulo());
+                viewHolder.imgDerecha.setVisibility(View.VISIBLE);
+            }else{
+                viewHolder.txttituloIzquierdo.setText(item.getTitulo());
+                viewHolder.imgIzquierda.setVisibility(View.VISIBLE);
+            }
+        }
+
+
+
+        if (accionahacer.equals("gol1") || accionahacer.equals("gol2")) {
+            viewHolder.imgIzquierda.setImageResource(R.drawable.icogol);
+            viewHolder.imgDerecha.setImageResource(R.drawable.icogol);
+        }
+        if (accionahacer.equals("fal1") || accionahacer.equals("fal2")) {
+            viewHolder.imgIzquierda.setImageResource(R.drawable.icofalta);
+            viewHolder.imgDerecha.setImageResource(R.drawable.icofalta);
+        }
+        if (accionahacer.equals("cor1") || accionahacer.equals("cor2")) {
+            viewHolder.imgIzquierda.setImageResource(R.drawable.icocorner);
+            viewHolder.imgDerecha.setImageResource(R.drawable.icocorner);
+        }
+        if (accionahacer.equals("troj1") || accionahacer.equals("troj2") || accionahacer.equals("taz1") || accionahacer.equals("taz2") || accionahacer.equals("tam1") || accionahacer.equals("tam2")) {
+            viewHolder.imgIzquierda.setImageResource(R.drawable.icotarjeta);
+            viewHolder.imgDerecha.setImageResource(R.drawable.icotarjeta);
+        }
+        if (accionahacer.equals("cam1") || accionahacer.equals("cam2")) {
+            viewHolder.imgIzquierda.setImageResource(R.drawable.icocambio);
+            viewHolder.imgDerecha.setImageResource(R.drawable.icocambio);
+        }
+        if (accionahacer.equals("pos1") || accionahacer.equals("pos2")) {
+            viewHolder.imgIzquierda.setImageResource(R.drawable.icofueral);
+            viewHolder.imgDerecha.setImageResource(R.drawable.icofueral);
+        }
+
+
     }
-
-
 
 }

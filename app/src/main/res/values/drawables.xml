@@ -5,4 +5,28 @@
     <item name="ic_menu_manage" type="drawable">@android:drawable/ic_menu_manage</item>
     <item name="ic_menu_share" type="drawable">@android:drawable/ic_menu_share</item>
     <item name="ic_menu_send" type="drawable">@android:drawable/ic_menu_send</item>
+
+
+
+    <!--aqui pongo los imagenes segun el minuto a minuto-->
+    <item name="gen" type="drawable">@android:drawable/ic_menu_send</item>
+    <item name="cam1" type="drawable">@android:drawable/ic_menu_send</item>
+    <item name="cam2" type="drawable">@android:drawable/ic_menu_send</item>
+    <item name="cor1" type="drawable">@android:drawable/ic_menu_send</item>
+    <item name="cor2" type="drawable">@android:drawable/ic_menu_send</item>
+    <item name="fal1" type="drawable">@android:drawable/ic_menu_send</item>
+    <item name="fal2" type="drawable">@android:drawable/ic_menu_send</item>
+    <item name="tam1" type="drawable">@android:drawable/ic_menu_send</item>
+    <item name="tam2" type="drawable">@android:drawable/ic_menu_send</item>
+    <item name="taz1" type="drawable">@android:drawable/ic_menu_send</item>
+    <item name="taz2" type="drawable">@android:drawable/ic_menu_send</item>
+    <item name="tro1" type="drawable">@android:drawable/ic_menu_send</item>
+    <item name="tro2" type="drawable">@android:drawable/ic_menu_send</item>
+    <item name="gol1" type="drawable">@android:drawable/ic_menu_send</item>
+    <item name="gol2" type="drawable">@android:drawable/ic_menu_send</item>
+    <item name="pos1" type="drawable">@android:drawable/ic_menu_send</item>
+    <item name="pos2" type="drawable">@android:drawable/ic_menu_send</item>
+
+
+
 </resources>

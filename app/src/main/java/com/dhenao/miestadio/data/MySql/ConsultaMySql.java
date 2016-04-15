@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import com.dhenao.miestadio.ActividadPrincipal;
 import com.dhenao.miestadio.R;
+import com.dhenao.miestadio.data.DatosMinutoAMinuto;
 import com.dhenao.miestadio.system.Config;
 
 import org.apache.http.NameValuePair;
@@ -57,6 +58,7 @@ public class ConsultaMySql {
                 case 0: tempConsulta = Config.URL_MYSQL_HORASYFECHASJUEGO; break;
                 case 1: tempConsulta = Config.URL_MYSQL_EQUIPOS; break;
                 case 2: tempConsulta = Config.URL_MYSQL_MINUTOAMINUTO; break;
+                case 3: tempConsulta = Config.URL_MARCADOR_PARTIDO; break;
             }
 
 
@@ -78,8 +80,8 @@ public class ConsultaMySql {
                                 JSONArray minutosJuego = json.getJSONArray("horasprog");
                                 c = minutosJuego.getJSONObject(0);
                                 String ttextoConsulta = c.getString("horasjuego");
-                                String tfechaPartido = recortarTexto(ttextoConsulta, "<table>\n<tbody>\n<tr>\n<td>", 10);
-                                String tfechaHoraPartido = tfechaPartido + " " + recortarTexto(ttextoConsulta, "<td>Primer Tiempo</td>\n<td>", 5);
+                                String tfechaPartido = recortarTexto(ttextoConsulta, "FECHA(", 10);
+                                String tfechaHoraPartido = tfechaPartido + " " + recortarTexto(ttextoConsulta, "INICIA_PT(", 5);
                                 SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm");
                                 Date consultafecha = fechamovil;
                                 try {
@@ -89,7 +91,7 @@ public class ConsultaMySql {
                                 }
                                 Config.horapt = consultafecha;
 
-                                tfechaHoraPartido = tfechaPartido + " " + recortarTexto(ttextoConsulta, "<td>Segundo Tiempo</td>\n<td>", 5);
+                                tfechaHoraPartido = tfechaPartido + " " + recortarTexto(ttextoConsulta, "INICIA_ST(", 5);
                                 consultafecha = fechamovil;
                                 try {
                                     consultafecha = format.parse(tfechaHoraPartido);
@@ -98,10 +100,10 @@ public class ConsultaMySql {
                                 }
                                 Config.horast = consultafecha;
 
-                                String textoRecortado = recortarTexto(ttextoConsulta, "<td>Adición PT</td>\n<td>", 1);
+                                String textoRecortado = recortarTexto(ttextoConsulta, "Adición_PT_(", 1);
                                 Config.repopt = Integer.parseInt(textoRecortado);
 
-                                textoRecortado = recortarTexto(ttextoConsulta, "<td>Adición ST</td>\n<td>", 1);
+                                textoRecortado = recortarTexto(ttextoConsulta, "Adición_ST_(", 1);
                                 Config.repost = Integer.parseInt(textoRecortado);
                                 break;
 
@@ -121,10 +123,30 @@ public class ConsultaMySql {
                                 Config.pEquipo2ImagenMaM = c.getString("imagen");
                                 break;
 
-                            case 2:
+                            case 2://consulta la informacion minuto a minuto
+                                Config.MinutoItems.clear();
+                                Log.d("Minuto a minuto: ", json.toString());
+                                // registros de minuto a minuto
+                                JSONArray minutoaminutolist = json.getJSONArray("minamin");
 
+                                for (int i = 0; i < minutoaminutolist.length(); i++) {
+                                    c = minutoaminutolist.getJSONObject(i);
+                                    if (c.getInt("equipo")==0) Config.MinutoItems.add(new DatosMinutoAMinuto("",c.getString("descripcion"),c.getString("accion"),""));
+                                    if (c.getInt("equipo")==1) Config.MinutoItems.add(new DatosMinutoAMinuto(c.getString("minuto"),c.getString("descripcion"),c.getString("accion"),""));
+                                    if (c.getInt("equipo")==2) Config.MinutoItems.add(new DatosMinutoAMinuto("",c.getString("descripcion"),c.getString("accion"),c.getString("minuto")));
+                                }
 
                                 break;
+
+                            case 3://consulto Marcadores del partido
+                                Log.d("Marcadores: ", json.toString());
+                                // equipos encontrados
+                                JSONArray marcadoresJson = json.getJSONArray("marcador");
+                                c = marcadoresJson.getJSONObject(0);
+                                Config.marcadorEquipo1 = c.getString("golsequipo1");
+                                Config.marcadorEquipo2 = c.getString("golsequipo2");
+                                break;
+
                         }
                         Respuest = 1; //encontro registros
                     } else {

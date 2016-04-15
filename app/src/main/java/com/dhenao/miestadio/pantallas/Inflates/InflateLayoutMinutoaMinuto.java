@@ -1,7 +1,9 @@
 package com.dhenao.miestadio.pantallas.Inflates;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.NotificationCompatSideChannelService;
@@ -15,6 +17,7 @@ import android.view.ViewGroup;
 import android.widget.Chronometer;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,9 +30,14 @@ import com.dhenao.miestadio.data.ListAdapterMultimedia;
 import com.dhenao.miestadio.data.MySql.ConsultaMySql;
 import com.dhenao.miestadio.system.Config;
 
+import org.w3c.dom.Text;
+
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Timer;
 //import com.dhenao.miestadio.data.DatosMultimedia;
 
 /**
@@ -37,15 +45,20 @@ import java.util.GregorianCalendar;
  */
 public class InflateLayoutMinutoaMinuto extends Fragment {
 
+    private static final int CANTIDAD_ITEMS_CARGA = 10;
     private RecyclerView reciclador;
     private GridLayoutManager layoutManager;
     private ListAdapterMinutoAMinuto adaptadorMinutoaMinuto;
     private SwipeRefreshLayout swipeMinutoaMinuto;
+    ConsultaMySql consultaMsql;
 
     public TextView txtPartidoMensaje;
     public TextView txtPartidoMensaje1;
     public Chronometer cuentapartido;
     public String textoPTST;
+
+    public TextView txtMarcadorEquipo1;
+    public TextView txtMarcadorEquipo2;
 
     public static InflateLayoutMinutoaMinuto nuevaInstancia(int itemmenu,int indiceSeccion) {
         InflateLayoutMinutoaMinuto fragment = new InflateLayoutMinutoaMinuto();
@@ -62,10 +75,10 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
         View view = inflater.inflate(R.layout.contenido_minutoaminuto_tab1, container, false);
 
         reciclador = (RecyclerView) view.findViewById(R.id.recicladorMinutoAMinuto);
-        layoutManager = new GridLayoutManager(getActivity(), 2);
+        layoutManager = new GridLayoutManager(getActivity(), 1);
         reciclador.setLayoutManager(layoutManager);
 
-        adaptadorMinutoaMinuto = new ListAdapterMinutoAMinuto(DatosMinutoAMinuto.FOTOS);
+        adaptadorMinutoaMinuto = new ListAdapterMinutoAMinuto(Config.MinutoItems);
         reciclador.setAdapter(adaptadorMinutoaMinuto);
 
          /*obtener fecha y hora del celular*/
@@ -73,7 +86,9 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
         Date fechamovil = cal.getTime();
         /********************************/
 
-        //swipeMinutoaMinuto = (SwipeRefreshLayout) view.findViewById(R.id.MinutoAMinuto); //lista de minuto a minuto
+        swipeMinutoaMinuto = (SwipeRefreshLayout) view.findViewById(R.id.swipeRefreshMinutoAMinuto); //lista de minuto a minuto
+        swipeMinutoaMinuto.setColorSchemeResources( R.color.rfs1, R.color.rfs2, R.color.rfs3, R.color.rfs4 );
+
         ImageButton imagenequipo = (ImageButton) view.findViewById(R.id.imagenequipo1); //imagen de equipo 1
         cuentapartido = (Chronometer) view.findViewById(R.id.cronometropartido);
         txtPartidoMensaje = (TextView) view.findViewById(R.id.txtpartidomensaje);
@@ -85,10 +100,18 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
         TextView txtequipo1 = (TextView) view.findViewById(R.id.nombreequipo1);
         TextView txtequipo2 = (TextView) view.findViewById(R.id.nombreequipo2);
 
+        txtMarcadorEquipo1 = (TextView) view.findViewById(R.id.marcadorequipo1);
+        txtMarcadorEquipo2 = (TextView) view.findViewById(R.id.marcadorequipo2);
+
         txtequipo1.setText(Config.pEquipo1NombreMaM);
         txtequipo2.setText(Config.pEquipo2NombreMaM);
 
-        cuentapartido.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
+        txtMarcadorEquipo1.setText(Config.marcadorEquipo1);
+        txtMarcadorEquipo2.setText(Config.marcadorEquipo2);
+
+
+        cuentapartido.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener()
+        {
             @Override
             public void onChronometerTick(Chronometer cArg) {
                 long time = SystemClock.elapsedRealtime() - cArg.getBase();
@@ -152,14 +175,27 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
             }
         });
 
-/*
-        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                consultarMinutoAMinuto(getContext());
+
+        swipeMinutoaMinuto.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+
+            @Override public void onRefresh() {
+                new tareaConsultaMysql().execute();
+                /*
+                new Handler().postDelayed(new Runnable() {
+                    @Override public void run() {
+                        Config.MinutoItems.clear();
+                        new tareaConsultaMysql().execute();
+                        adaptadorMinutoaMinuto = new ListAdapterMinutoAMinuto(Config.MinutoItems);
+                        reciclador.setAdapter(adaptadorMinutoaMinuto);
+
+                        swipeMinutoaMinuto.setRefreshing(false);
+                    }
+                }, 5000);
+                */
             }
+
         });
-*/
+
 
 
 
@@ -175,10 +211,46 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
     }
 
 
-    public void consultarMinutoAMinuto(Context contexto) {
-        ConsultaMySql consultaMsql = new ConsultaMySql();
-        int trespt = consultaMsql.consultar(2,contexto);
+    class tareaConsultaMysql extends AsyncTask<String,String,List<ListAdapterMinutoAMinuto>> {
+        public int trespt;
+        static final int DURACION = 3 * 1000; // 3 segundos de carga
+
+        protected List doInBackground(String... args) {
+            ConsultaMySql consultaMsql = new ConsultaMySql();
+            trespt = consultaMsql.consultar(2, getContext());
+
+            try {
+                Thread.sleep(DURACION);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return Config.MinutoItems;
+        }
+
+        @Override
+        protected void onPostExecute(List result) {
+            super.onPostExecute(result);
+
+            // Limpiar elementos antiguos
+            adaptadorMinutoaMinuto.clear();
+
+            // Añadir elementos nuevos
+            adaptadorMinutoaMinuto.addAll(result);
+
+            // Parar la animación del indicador
+            swipeMinutoaMinuto.setRefreshing(false);
+
+            reciclador.setAdapter(adaptadorMinutoaMinuto);
+        }
+
+
+
     }
+
+
+
+
+
 
 
 }

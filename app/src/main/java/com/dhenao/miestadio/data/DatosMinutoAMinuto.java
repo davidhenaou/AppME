@@ -9,38 +9,52 @@ import java.util.Random;
 
 public class DatosMinutoAMinuto {
 
-    private String descripcion;
-    private String nombre;
-    private int idDrawable;
+    private String minutoi;
+    private String titulo;
+    private String accion;
+    private String minutod;
 
-    public DatosMinutoAMinuto(String descripcion, String nombre, int idDrawable) {
-        this.descripcion = descripcion;
-        this.nombre = nombre;
-        this.idDrawable = idDrawable;
+    public DatosMinutoAMinuto(String minutoi, String titulo, String accion,String minutod) {
+        this.minutoi = minutoi;
+        this.titulo = titulo;
+        this.accion = accion;
+        this.minutod = minutod;
     }
 
-    public static final List<DatosMinutoAMinuto> FOTOS = new ArrayList<DatosMinutoAMinuto>();
-    public static final List<DatosMinutoAMinuto> VIDEOS = new ArrayList<DatosMinutoAMinuto>();
+    /*
+    public static final List<DatosMinutoAMinuto> MinutoItems = new ArrayList<DatosMinutoAMinuto>();
+
     static {
-        FOTOS.add(new DatosMinutoAMinuto("foto 1", "Jugada 1", R.drawable.foto1));
-        FOTOS.add(new DatosMinutoAMinuto("foto 2", "Jugada 2", R.drawable.foto2));
-        FOTOS.add(new DatosMinutoAMinuto("foto 3", "Jugada 3", R.drawable.foto3));
-        FOTOS.add(new DatosMinutoAMinuto("foto 4", "Jugada 4", R.drawable.foto4));
-        FOTOS.add(new DatosMinutoAMinuto("foto 5", "Jugada 5", R.drawable.foto5));
-        FOTOS.add(new DatosMinutoAMinuto("foto 6", "Jugada 6", R.drawable.foto6));
+        MinutoItems.add(new DatosMinutoAMinuto("","Gol-James","gol de prueba","60"));
+        MinutoItems.add(new DatosMinutoAMinuto("","Gol-James","gol de prueba","44"));
+        MinutoItems.add(new DatosMinutoAMinuto("36","Gol-Antonio Greizmann","gol de prueba",""));
+        MinutoItems.add(new DatosMinutoAMinuto("","Gol-James ","gol de prueba","32"));
+        MinutoItems.add(new DatosMinutoAMinuto("15","Gol-Antonio Greizmann","gol de prueba",""));
+        MinutoItems.add(new DatosMinutoAMinuto("1","Gol-Antonio Greizmann","gol de prueba",""));
+        MinutoItems.add(new DatosMinutoAMinuto("","Gol-James","gol de prueba","60"));
+        MinutoItems.add(new DatosMinutoAMinuto("","Gol-James","gol de prueba","44"));
+        MinutoItems.add(new DatosMinutoAMinuto("36","Gol-Antonio Greizmann","gol de prueba",""));
+        MinutoItems.add(new DatosMinutoAMinuto("","Gol-James ","gol de prueba","32"));
+        MinutoItems.add(new DatosMinutoAMinuto("15","Gol-Antonio Greizmann","gol de prueba",""));
+        MinutoItems.add(new DatosMinutoAMinuto("1","Gol-Antonio Greizmann","gol de prueba",""));
+    }*/
+
+    public String getMinutoi() {
+        return minutoi;
     }
 
-    public String getMultimedia() {
-        return descripcion;
+    public String getMinutod() {
+        return minutod;
     }
 
-    public String getMultimedia1nombre() {
-        return nombre;
+    public String getTitulo() {
+        return titulo;
     }
 
-    public int getMultimedia1IdDrawable() {
-        return idDrawable;
+    public String getAccion() {
+        return accion;
     }
+
 
     public static ArrayList<DatosMinutoAMinuto> randomList(int count) {
         Random random = new Random();
@@ -50,7 +64,7 @@ public class DatosMinutoAMinuto {
         count = Math.min(count, 10 ); //FOTOS.length);
 
         while (items.size() < count) {
-           // items.add(LISTAS[random.nextInt(LISTAS.length)]);
+            // items.add(LISTAS[random.nextInt(LISTAS.length)]);
         }
 
         return new ArrayList<DatosMinutoAMinuto>(items);

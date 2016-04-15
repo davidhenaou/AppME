@@ -51,6 +51,8 @@ public class Splash extends Activity {
             ConsultaMySql consultaMsql = new ConsultaMySql();
             trespt = consultaMsql.consultar(0, getApplicationContext());
             trespt = consultaMsql.consultar(1, getApplicationContext());
+            trespt = consultaMsql.consultar(2, getApplicationContext());
+            trespt = consultaMsql.consultar(3, getApplicationContext());
             return null;
         }
 
