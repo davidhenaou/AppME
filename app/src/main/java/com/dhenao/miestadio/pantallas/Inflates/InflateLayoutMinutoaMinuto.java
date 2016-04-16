@@ -180,25 +180,9 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
 
             @Override public void onRefresh() {
                 new tareaConsultaMysql().execute();
-                /*
-                new Handler().postDelayed(new Runnable() {
-                    @Override public void run() {
-                        Config.MinutoItems.clear();
-                        new tareaConsultaMysql().execute();
-                        adaptadorMinutoaMinuto = new ListAdapterMinutoAMinuto(Config.MinutoItems);
-                        reciclador.setAdapter(adaptadorMinutoaMinuto);
-
-                        swipeMinutoaMinuto.setRefreshing(false);
-                    }
-                }, 5000);
-                */
             }
 
         });
-
-
-
-
         return view;
     }
 
@@ -213,14 +197,13 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
 
     class tareaConsultaMysql extends AsyncTask<String,String,List<ListAdapterMinutoAMinuto>> {
         public int trespt;
-        static final int DURACION = 3 * 1000; // 3 segundos de carga
 
         protected List doInBackground(String... args) {
             ConsultaMySql consultaMsql = new ConsultaMySql();
             trespt = consultaMsql.consultar(2, getContext());
 
             try {
-                Thread.sleep(DURACION);
+                Thread.sleep(2000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -232,15 +215,20 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
             super.onPostExecute(result);
 
             // Limpiar elementos antiguos
-            adaptadorMinutoaMinuto.clear();
+           // adaptadorMinutoaMinuto.clear();
 
+           // adaptadorMinutoaMinuto = new ListAdapterMinutoAMinuto(Config.MinutoItems);
             // Añadir elementos nuevos
-            adaptadorMinutoaMinuto.addAll(result);
+            adaptadorMinutoaMinuto.addAll( Config.MinutoItems);
+            adaptadorMinutoaMinuto.notifyDataSetChanged();
+
 
             // Parar la animación del indicador
             swipeMinutoaMinuto.setRefreshing(false);
 
-            reciclador.setAdapter(adaptadorMinutoaMinuto);
+            reciclador.getAdapter().notifyItemRangeInserted(0, 0);
+
+            //reciclador.setAdapter(adaptadorMinutoaMinuto);
         }
 
 
