@@ -51,7 +51,7 @@ public class Config {
     /*public static int minutosjuego = 0;
     public static int segundosjuego = 0;*/
 
-    public static final List<DatosMinutoAMinuto> MinutoItems = new ArrayList<DatosMinutoAMinuto>();
+    public static List<DatosMinutoAMinuto> MinutoItems ; // = new ArrayList<DatosMinutoAMinuto>();
 
 
 }

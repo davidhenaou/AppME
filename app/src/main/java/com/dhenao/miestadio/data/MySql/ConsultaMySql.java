@@ -124,7 +124,8 @@ public class ConsultaMySql {
                                 break;
 
                             case 2://consulta la informacion minuto a minuto
-                                Config.MinutoItems.clear();
+                                Config.MinutoItems = new ArrayList<DatosMinutoAMinuto>();
+                                //Config.MinutoItems.clear();
                                 Log.d("Minuto a minuto: ", json.toString());
                                 // registros de minuto a minuto
                                 JSONArray minutoaminutolist = json.getJSONArray("minamin");

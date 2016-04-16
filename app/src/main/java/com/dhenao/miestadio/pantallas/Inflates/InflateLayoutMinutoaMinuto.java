@@ -179,6 +179,8 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
         swipeMinutoaMinuto.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
 
             @Override public void onRefresh() {
+                Config.MinutoItems.clear();
+                adaptadorMinutoaMinuto.clear();
                 new tareaConsultaMysql().execute();
             }
 
@@ -199,6 +201,7 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
         public int trespt;
 
         protected List doInBackground(String... args) {
+
             ConsultaMySql consultaMsql = new ConsultaMySql();
             trespt = consultaMsql.consultar(2, getContext());
 
