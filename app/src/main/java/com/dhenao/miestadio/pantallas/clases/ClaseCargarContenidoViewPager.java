@@ -1,4 +1,4 @@
-package com.dhenao.miestadio.ui;
+package com.dhenao.miestadio.pantallas.clases;
 
 import android.graphics.Color;
 import android.os.Bundle;
@@ -13,16 +13,17 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.dhenao.miestadio.R;
+import com.dhenao.miestadio.pantallas.Inflates.InflateLayoutCalendario;
 import com.dhenao.miestadio.pantallas.Inflates.InflateLayoutMinutoaMinuto;
-import com.dhenao.miestadio.pantallas.clases.GestionTabs;
+import com.dhenao.miestadio.pantallas.Inflates.InflateLayoutNarracion;
 
-public class CargarContenidoViewPager extends Fragment{
+public class ClaseCargarContenidoViewPager extends Fragment{
     private AppBarLayout appBarLayout;
     private TabLayout tabLayout;
     private ViewPager viewPager;
 
-    public static CargarContenidoViewPager nuevaInstancia(int itemMenu,int compMenu ) {
-        CargarContenidoViewPager fragment = new CargarContenidoViewPager();
+    public static ClaseCargarContenidoViewPager nuevaInstancia(int itemMenu,int compMenu ) {
+        ClaseCargarContenidoViewPager fragment = new ClaseCargarContenidoViewPager();
         Bundle args = new Bundle();
         args.putInt("itemMenu", itemMenu);
         args.putInt("compMenu", compMenu);
@@ -67,9 +68,15 @@ public class CargarContenidoViewPager extends Fragment{
                 adapter.addFragment(ClaseTabsLLenadoConListas.nuevaInstancia(itemMenu, nmeroItem++), getString(R.string.titulo_item2_tab2));
                 break;
 
+            case 3: //Narracion
+                adapter.addFragment(InflateLayoutNarracion.nuevaInstancia(itemMenu, nmeroItem++), getString(R.string.menuitem_3));
+                break;
+
+
+
             case 5: //Partido (item del menu, numero de item)
-                adapter.addFragment(ClaseTabsLLenadaCalendarios.nuevaInstancia(itemMenu, nmeroItem++),"Liga Postobon");
-                adapter.addFragment(ClaseTabsLLenadaCalendarios.nuevaInstancia(itemMenu, nmeroItem++), "Liga Aguila");
+                adapter.addFragment(InflateLayoutCalendario.nuevaInstancia(itemMenu, nmeroItem++),"Liga Postobon");
+                adapter.addFragment(InflateLayoutCalendario.nuevaInstancia(itemMenu, nmeroItem++), "Liga Aguila");
                 break;
 
 

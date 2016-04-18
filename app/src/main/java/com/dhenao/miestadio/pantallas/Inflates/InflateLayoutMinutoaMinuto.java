@@ -47,6 +47,13 @@ import java.util.Timer;
 public class InflateLayoutMinutoaMinuto extends Fragment {
 
     public int trespttarea;
+    /*se usa este codigo para manejo de los refrescos*/
+    public int tiempoRefrescoMinAMin = 5;
+    public int minRandRefresh;
+    public int segRandRefresh;
+    public Date horaRefresco;
+    /************************************************/
+
     private static final int CANTIDAD_ITEMS_CARGA = 10;
     private RecyclerView reciclador;
     private GridLayoutManager layoutManager;
@@ -76,6 +83,12 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.contenido_minutoaminuto_tab1, container, false);
 
+        //creo un numero aleatorio para saber cada cuanto actualizo el minuto a minuto
+        segRandRefresh = (int) (59 * Math.random()) + 1;
+        minRandRefresh = (int) ((tiempoRefrescoMinAMin-1) * Math.random()) + 1;
+        Log.d("segRandRefresh",Integer.toString(segRandRefresh));
+        Log.d("minRandRefresh",Integer.toString(minRandRefresh));
+
         reciclador = (RecyclerView) view.findViewById(R.id.recicladorMinutoAMinuto);
         layoutManager = new GridLayoutManager(getActivity(), 1);
         reciclador.setLayoutManager(layoutManager);
@@ -86,6 +99,7 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
          /*obtener fecha y hora del celular*/
         Calendar cal = new GregorianCalendar();
         Date fechamovil = cal.getTime();
+        horaRefresco = fechamovil;
         /********************************/
 
         swipeMinutoaMinuto = (SwipeRefreshLayout) view.findViewById(R.id.swipeRefreshMinutoAMinuto); //lista de minuto a minuto
@@ -156,17 +170,26 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
                         txtPartidoMensaje1.setVisibility(View.VISIBLE);
                         cuentapartido.stop();
                     } else {
-                        if ((time/60000)%5==0 && s==0){
-                            // Get instance of Vibrator from current Context
-                            Vibrator v = (Vibrator) getContext().getSystemService(Context.VIBRATOR_SERVICE);
-                            v.vibrate(300);
-                            Toast.makeText(getContext(), "pasaron los minutos", Toast.LENGTH_SHORT).show();
-                            swipeMinutoaMinuto.setRefreshing(true);
-                            new tareaConsultaMysql().execute();
+
+                        if ((time/60000)%tiempoRefrescoMinAMin==minRandRefresh && s==segRandRefresh && !swipeMinutoaMinuto.isRefreshing()){
+                            ejecutarMiaAMin();
+                            /*
+                            Calendar cal = new GregorianCalendar();
+                            Date horaRefresco1 = cal.getTime();
+                            int SegundosPasados = restarFechas(horaRefresco, horaRefresco1);
+
+                            if (SegundosPasados>60){
+                                Vibrator v = (Vibrator) getContext().getSystemService(Context.VIBRATOR_SERVICE);
+                                v.vibrate(200);
+                                //Toast.makeText(getContext(), "pasaron los minutos", Toast.LENGTH_SHORT).show();
+                                swipeMinutoaMinuto.setRefreshing(true);
+                                new tareaConsultaMysql().execute();
+                            }*/
                         }
                         txtPartidoMensaje.setVisibility(View.INVISIBLE);
                         txtPartidoMensaje1.setText(cArg.getText());
                         txtPartidoMensaje1.setVisibility(View.VISIBLE);
+
                     }
                 }
             }
@@ -192,17 +215,39 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
         swipeMinutoaMinuto.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
 
             @Override public void onRefresh() {
-                //Config.MinutoItems.clear();
-                if (txtPartidoMensaje1.getText().equals("Terminó") || txtPartidoMensaje1.getText().equals("Aún falta") || txtPartidoMensaje1.getText().equals("Minutos!")){
+
+                ejecutarMiaAMin();
+                /*
+                Calendar cal = new GregorianCalendar();
+                Date horaRefresco1 = cal.getTime();
+                int SegundosPasados = restarFechas(horaRefresco, horaRefresco1);
+
+                if (txtPartidoMensaje1.getText().equals("Terminó") || txtPartidoMensaje1.getText().equals("Aún falta") || txtPartidoMensaje1.getText().equals("Minutos!") || SegundosPasados<60){
                     swipeMinutoaMinuto.setRefreshing(false);
                 }else{
                     new tareaConsultaMysql().execute();
-                }
+                }*/
 
             }
 
         });
         return view;
+    }
+
+
+    public void ejecutarMiaAMin(){
+        swipeMinutoaMinuto.setRefreshing(true);
+        Calendar cal = new GregorianCalendar();
+        Date horaRefresco1 = cal.getTime();
+        int SegundosPasados = restarFechas(horaRefresco, horaRefresco1);
+
+        if (txtPartidoMensaje1.getText().equals("Terminó") || txtPartidoMensaje1.getText().equals("Aún falta") || txtPartidoMensaje1.getText().equals("Minutos!") || SegundosPasados<60){
+            swipeMinutoaMinuto.setRefreshing(false);
+        }else{
+            Vibrator v = (Vibrator) getContext().getSystemService(Context.VIBRATOR_SERVICE);
+            v.vibrate(100);
+            new tareaConsultaMysql().execute();
+        }
     }
 
 
@@ -218,6 +263,9 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
 
 
         protected List doInBackground(String... args) {
+
+            Calendar cal = new GregorianCalendar();
+            horaRefresco =  cal.getTime();
 
             adaptadorMinutoaMinuto.clear();
             ConsultaMySql consultaMsql = new ConsultaMySql();
@@ -236,26 +284,18 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
         protected void onPostExecute(List result) {
             super.onPostExecute(result);
 
-           txtMarcadorEquipo1.setText(Config.marcadorEquipo1);
-           txtMarcadorEquipo2.setText(Config.marcadorEquipo2);
+            txtMarcadorEquipo1.setText(Config.marcadorEquipo1);
+            txtMarcadorEquipo2.setText(Config.marcadorEquipo2);
 
-           //if (trespttarea==1) adaptadorMinutoaMinuto.clear();
-
-           // adaptadorMinutoaMinuto = new ListAdapterMinutoAMinuto(Config.MinutoItems);
             // Añadir elementos nuevos
             adaptadorMinutoaMinuto.addAll( Config.MinutoItems);
             adaptadorMinutoaMinuto.notifyDataSetChanged();
 
-
             // Parar la animación del indicador
             swipeMinutoaMinuto.setRefreshing(false);
-
             reciclador.getAdapter().notifyItemRangeInserted(0, 0);
 
-            //reciclador.setAdapter(adaptadorMinutoaMinuto);
         }
-
-
 
     }
 

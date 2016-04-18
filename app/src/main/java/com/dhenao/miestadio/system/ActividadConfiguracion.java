@@ -7,6 +7,6 @@ public class ActividadConfiguracion extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getFragmentManager().beginTransaction().replace(android.R.id.content, new OpcionesFragment()).commit();
+        getFragmentManager().beginTransaction().replace(android.R.id.content, new OpcionesConfiguracion()).commit();
     }
 }

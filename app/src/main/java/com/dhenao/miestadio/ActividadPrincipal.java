@@ -38,14 +38,14 @@ import android.widget.Toast;
 import com.dhenao.miestadio.data.MySql.RefrescarObjetos;
 import com.dhenao.miestadio.data.SQlite.DatabaseHandler;
 import com.dhenao.miestadio.data.SQlite.EquipoFutbol;
-import com.dhenao.miestadio.pantallas.MinutoaMinuto;
 import com.dhenao.miestadio.system.ActividadConfiguracion;
 import com.dhenao.miestadio.system.Config;
 import com.dhenao.miestadio.system.autenticacion.LogueoActivity;
 import com.dhenao.miestadio.pantallas.SubirMultimediaaSevidor;
-import com.dhenao.miestadio.ui.CargaContenido;
-import com.dhenao.miestadio.ui.CargarContenidoViewPager;
-import com.dhenao.miestadio.ui.MultiTouchActivity;
+import com.dhenao.miestadio.pantallas.PruebaCargaContenido;
+import com.dhenao.miestadio.pantallas.clases.ClaseCargarContenidoLayout;
+import com.dhenao.miestadio.pantallas.clases.ClaseCargarContenidoViewPager;
+import com.dhenao.miestadio.pantallas.clases.MultiTouchActivity;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -86,12 +86,6 @@ public class ActividadPrincipal extends AppCompatActivity {
 
     RefrescarObjetos refrecoObjetos;
 
-    /*** para el refresco de listas*/
-    /*private RecyclerView recycler;
-    private ListAdapterMultimedia adapter;
-    private RecyclerView.LayoutManager lManager;
-    private SwipeRefreshLayout refreshLayout;*/
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,7 +121,6 @@ public class ActividadPrincipal extends AppCompatActivity {
             Log.d("Nombre: ", log);
         }
         /**/
-
 
 
         //capturar imagen de perfil
@@ -333,25 +326,25 @@ public class ActividadPrincipal extends AppCompatActivity {
 
         switch (itemDrawer.getItemId()) { //FragmentoMultimedia();
             case R.id.nav_1:
-                fragmentoGenerico = CargarContenidoViewPager.nuevaInstancia(1, 101);
+                fragmentoGenerico = ClaseCargarContenidoViewPager.nuevaInstancia(1, 100);
                 break;
             case R.id.nav_2:
-                fragmentoGenerico = CargarContenidoViewPager.nuevaInstancia(2, 4);
+                fragmentoGenerico = ClaseCargarContenidoViewPager.nuevaInstancia(2, 4);
                 break;
             case R.id.nav_3:
-
+                fragmentoGenerico = ClaseCargarContenidoLayout.nuevaInstancia(3, 100);
                 break;
             case R.id.nav_4:
 
                 break;
             case R.id.nav_5:
-                fragmentoGenerico = CargarContenidoViewPager.nuevaInstancia(5, 101);
+                fragmentoGenerico = ClaseCargarContenidoLayout.nuevaInstancia(5, 100);
                 break;
             case R.id.nav_6:
 
                 break;
             case R.id.nav_7:
-                Intent i = new Intent(this, CargaContenido.class );
+                Intent i = new Intent(this, PruebaCargaContenido.class );
                 startActivity(i);
                 break;
             case R.id.nav_8:
@@ -603,55 +596,6 @@ public class ActividadPrincipal extends AppCompatActivity {
 
 
 
-    /*todas las llamadas a otras ventanas de contenido*/
-
-    public void clickMinutoAminuto(View target) { //para cargar la ventana de minuto a minuto
-        Intent i = new Intent(ActividadPrincipal.this, MinutoaMinuto.class );
-        startActivity(i);
-    }
-
-
-
-
-
-
-    /*tarea que hace la consulta a mysql*/
-    /*
-    class TareaAsincronicaMySql extends AsyncTask<String,String,String> {
-        String mensajeProgress;
-        ConsultaMySql consultaMsql;
-        RefrescarObjetos refrecoObjetos;
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            if(pQuemoduloConsulta==1) mensajeProgress="Cargando Informacion de Minuto A Minuto";
-
-            pDialog = new ProgressDialog(ActividadPrincipal.this);
-            pDialog.setMessage(mensajeProgress + ", Por favor espere...");
-            pDialog.setIndeterminate(false);
-            pDialog.setCancelable(false);
-            if(pConsultarMySql) pDialog.show();
-        }
-
-        protected String doInBackground(String... args) {
-            consultaMsql = new ConsultaMySql(pQuemoduloConsulta,pConsultarMySql);
-            return null;
-        }
-
-        protected void onPostExecute(String file_url) {
-            //desaparezco el cuadro de dialogo
-            pDialog.dismiss();
-
-            runOnUiThread(new Runnable() {
-                public void run() {
-                    refrecoObjetos = new RefrescarObjetos(pResfreconInstantaneo, pQuemoduloConsulta, ActividadPrincipal.this);
-                    //consultaMsql.ResfrescarInformacion(pResfreconInstantaneo, pQuemoduloConsulta, ActividadPrincipal.this);
-                }
-            });
-        }
-    }*/
-
 
 
     /* para el menu contextual.... no borrar
@@ -677,31 +621,6 @@ public class ActividadPrincipal extends AppCompatActivity {
                 return true;
             default:
                 return super.onContextItemSelected(item);
-        }
-    }
-    */
-
-
-    /*
-    public void CargarPerfil() {
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(ActividadPrincipal.this);
-        Config.UsuarioPerfil = pref.getString("UsuarioPref", "").trim();
-        Config.CorreoPerfil = pref.getString("CorreoPref", "").trim();
-        Config.CelularPerfil = pref.getString("CelularPref", "").trim();
-        String rutaImagenperf = pref.getString("ImagenPerf", "").trim();
-
-        TextView edtUsuarioPerfil = (TextView) findViewById(R.id.perfil_usuario);
-        TextView edtCorreoPerfil = (TextView) findViewById(R.id.perfil_correo);
-        TextView edtCelularPerfil = (TextView) findViewById(R.id.perfil_celular);
-        ImageView imagenPerfil = (ImageView) findViewById(R.id.icono_miperfil);
-
-        edtUsuarioPerfil.setText(Config.UsuarioPerfil);
-        edtCorreoPerfil.setText(Config.CorreoPerfil);
-        edtCelularPerfil.setText(Config.CelularPerfil);
-        if (!TextUtils.isEmpty(rutaImagenperf)){
-            File imgFile = new File(rutaImagenperf);
-            Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-            imagenPerfil.setImageBitmap(myBitmap);
         }
     }
     */

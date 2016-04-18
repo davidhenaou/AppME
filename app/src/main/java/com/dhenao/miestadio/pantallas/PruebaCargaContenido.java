@@ -1,4 +1,4 @@
-package com.dhenao.miestadio.ui;
+package com.dhenao.miestadio.pantallas;
 import android.support.v7.app.AppCompatActivity;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -20,7 +20,7 @@ import android.widget.TextView;
 
 import com.dhenao.miestadio.R;
 
-public class CargaContenido extends AppCompatActivity {
+public class PruebaCargaContenido extends AppCompatActivity {
 
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;

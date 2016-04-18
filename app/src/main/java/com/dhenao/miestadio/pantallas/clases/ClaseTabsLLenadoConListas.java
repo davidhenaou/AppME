@@ -1,4 +1,4 @@
-package com.dhenao.miestadio.ui;
+package com.dhenao.miestadio.pantallas.clases;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -49,13 +49,6 @@ public class ClaseTabsLLenadoConListas extends Fragment {
                 switch (indiceSeccion) {
                     case 0:
                         adaptadorMultimedia = new ListAdapterMultimedia(DatosMultimedia.FOTOS);
-                        /*FOTOS.add(new DatosMultimedia("foto 1", "Jugada 1", R.drawable.foto1));
-                        FOTOS.add(new DatosMultimedia("foto 2", "Jugada 2", R.drawable.foto2));
-                        FOTOS.add(new DatosMultimedia("foto 3", "Jugada 3", R.drawable.foto3));
-                        FOTOS.add(new DatosMultimedia("foto 4", "Jugada 4", R.drawable.foto4));
-                        FOTOS.add(new DatosMultimedia("foto 5", "Jugada 5", R.drawable.foto5));
-                        FOTOS.add(new DatosMultimedia("foto 6", "Jugada 6", R.drawable.foto6));
-                        adaptadorMultimedia = new ListAdapterMultimedia(FOTOS);*/
                         break;
                     case 1:
                         adaptadorMultimedia = new ListAdapterMultimedia(DatosMultimedia.VIDEOS);

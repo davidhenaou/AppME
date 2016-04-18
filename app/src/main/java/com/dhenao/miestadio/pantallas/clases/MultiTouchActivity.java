@@ -1,8 +1,10 @@
-package com.dhenao.miestadio.ui;
+package com.dhenao.miestadio.pantallas.clases;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.app.Activity;
+
+import com.dhenao.miestadio.pantallas.clases.TouchImageView;
 
 public class MultiTouchActivity extends Activity {
     @Override

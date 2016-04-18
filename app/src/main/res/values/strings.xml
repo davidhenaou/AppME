@@ -10,8 +10,8 @@
 
 
     <!--informacion del iten 1-->
-    <string name="nombredeequipo1">Medellín</string>
-    <string name="nombredeequipo2">Nacional</string>
+    <string name="nombredeequipo1">equipo1</string>
+    <string name="nombredeequipo2">equipo2</string>
 
 
 

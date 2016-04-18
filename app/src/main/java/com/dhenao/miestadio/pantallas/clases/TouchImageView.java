@@ -1,4 +1,4 @@
-package com.dhenao.miestadio.ui;
+package com.dhenao.miestadio.pantallas.clases;
 
 import android.content.Context;
 import android.graphics.Matrix;

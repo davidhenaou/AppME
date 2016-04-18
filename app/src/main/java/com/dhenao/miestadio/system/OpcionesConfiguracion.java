@@ -5,7 +5,7 @@ import android.preference.PreferenceFragment;
 
 import com.dhenao.miestadio.R;
 
-public class OpcionesFragment extends PreferenceFragment {
+public class OpcionesConfiguracion extends PreferenceFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
