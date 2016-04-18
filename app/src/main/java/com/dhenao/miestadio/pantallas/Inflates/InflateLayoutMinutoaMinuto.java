@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.os.Vibrator;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.NotificationCompatSideChannelService;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -45,6 +46,7 @@ import java.util.Timer;
  */
 public class InflateLayoutMinutoaMinuto extends Fragment {
 
+    public int trespttarea;
     private static final int CANTIDAD_ITEMS_CARGA = 10;
     private RecyclerView reciclador;
     private GridLayoutManager layoutManager;
@@ -125,6 +127,9 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
                 //cArg.setText(textoPTST +"("+ hh + ":" + mm + ":" + ss + ")");
                 cArg.setText(textoPTST +"-"+ mm + ":" + ss );
 
+                txtPartidoMensaje.setText("");
+                txtPartidoMensaje1.setText("");
+
                 //Log.d("REVISION INICIAL TIEMPO", (String.valueOf(time / 60)));
                 //Log.d("REVISION INICIAL TIEMPO", (String.valueOf(time / 60000)));
                 if ((time / 60) < 0) {
@@ -151,6 +156,14 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
                         txtPartidoMensaje1.setVisibility(View.VISIBLE);
                         cuentapartido.stop();
                     } else {
+                        if ((time/60000)%5==0 && s==0){
+                            // Get instance of Vibrator from current Context
+                            Vibrator v = (Vibrator) getContext().getSystemService(Context.VIBRATOR_SERVICE);
+                            v.vibrate(300);
+                            Toast.makeText(getContext(), "pasaron los minutos", Toast.LENGTH_SHORT).show();
+                            swipeMinutoaMinuto.setRefreshing(true);
+                            new tareaConsultaMysql().execute();
+                        }
                         txtPartidoMensaje.setVisibility(View.INVISIBLE);
                         txtPartidoMensaje1.setText(cArg.getText());
                         txtPartidoMensaje1.setVisibility(View.VISIBLE);
@@ -179,9 +192,13 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
         swipeMinutoaMinuto.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
 
             @Override public void onRefresh() {
-                Config.MinutoItems.clear();
-                adaptadorMinutoaMinuto.clear();
-                new tareaConsultaMysql().execute();
+                //Config.MinutoItems.clear();
+                if (txtPartidoMensaje1.getText().equals("Terminó") || txtPartidoMensaje1.getText().equals("Aún falta") || txtPartidoMensaje1.getText().equals("Minutos!")){
+                    swipeMinutoaMinuto.setRefreshing(false);
+                }else{
+                    new tareaConsultaMysql().execute();
+                }
+
             }
 
         });
@@ -198,12 +215,14 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
 
 
     class tareaConsultaMysql extends AsyncTask<String,String,List<ListAdapterMinutoAMinuto>> {
-        public int trespt;
+
 
         protected List doInBackground(String... args) {
 
+            adaptadorMinutoaMinuto.clear();
             ConsultaMySql consultaMsql = new ConsultaMySql();
-            trespt = consultaMsql.consultar(2, getContext());
+            trespttarea = consultaMsql.consultar(2, getContext());
+            consultaMsql.consultar(3, getContext());
 
             try {
                 Thread.sleep(2000);
@@ -217,8 +236,10 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
         protected void onPostExecute(List result) {
             super.onPostExecute(result);
 
-            // Limpiar elementos antiguos
-           // adaptadorMinutoaMinuto.clear();
+           txtMarcadorEquipo1.setText(Config.marcadorEquipo1);
+           txtMarcadorEquipo2.setText(Config.marcadorEquipo2);
+
+           //if (trespttarea==1) adaptadorMinutoaMinuto.clear();
 
            // adaptadorMinutoaMinuto = new ListAdapterMinutoAMinuto(Config.MinutoItems);
             // Añadir elementos nuevos
