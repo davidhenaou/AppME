@@ -1,6 +1,12 @@
 package com.dhenao.miestadio.pantallas.Inflates;
 
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,6 +23,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Chronometer;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -30,9 +37,13 @@ import com.dhenao.miestadio.data.ListAdapterMinutoAMinuto;
 import com.dhenao.miestadio.data.ListAdapterMultimedia;
 import com.dhenao.miestadio.data.MySql.ConsultaMySql;
 import com.dhenao.miestadio.system.Config;
+import com.dhenao.miestadio.system.Herramientas;
 
 import org.w3c.dom.Text;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -45,6 +56,13 @@ import java.util.Timer;
  * Llenado de las pestañas
  */
 public class InflateLayoutMinutoaMinuto extends Fragment {
+
+    /*********configuracion de equipos*********/
+    ImageButton imagenequipo1,imagenequipo2;
+    TextView txtequipo1, txtequipo2;
+    /****************************************/
+
+
 
     public int trespttarea;
     /*se usa este codigo para manejo de los refrescos*/
@@ -61,13 +79,15 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
     private SwipeRefreshLayout swipeMinutoaMinuto;
     ConsultaMySql consultaMsql;
 
+    public LinearLayout contenedorEquipos;
     public TextView txtPartidoMensaje;
     public TextView txtPartidoMensaje1;
     public Chronometer cuentapartido;
     public String textoPTST;
-
     public TextView txtMarcadorEquipo1;
     public TextView txtMarcadorEquipo2;
+
+    Herramientas herramientas;
 
     public static InflateLayoutMinutoaMinuto nuevaInstancia(int itemmenu,int indiceSeccion) {
         InflateLayoutMinutoaMinuto fragment = new InflateLayoutMinutoaMinuto();
@@ -78,6 +98,15 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
         return fragment;
     }
 
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            contenedorEquipos.setVisibility(View.GONE);
+        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
+            contenedorEquipos.setVisibility(View.VISIBLE);
+        }
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -105,7 +134,8 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
         swipeMinutoaMinuto = (SwipeRefreshLayout) view.findViewById(R.id.swipeRefreshMinutoAMinuto); //lista de minuto a minuto
         swipeMinutoaMinuto.setColorSchemeResources( R.color.rfs1, R.color.rfs2, R.color.rfs3, R.color.rfs4 );
 
-        ImageButton imagenequipo = (ImageButton) view.findViewById(R.id.imagenequipo1); //imagen de equipo 1
+
+        contenedorEquipos = (LinearLayout) view.findViewById(R.id.contenedorequipos);
         cuentapartido = (Chronometer) view.findViewById(R.id.cronometropartido);
         txtPartidoMensaje = (TextView) view.findViewById(R.id.txtpartidomensaje);
         txtPartidoMensaje1 = (TextView) view.findViewById(R.id.txtpartidomensaje1);
@@ -113,99 +143,98 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
         txtPartidoMensaje.setVisibility(View.INVISIBLE);
         txtPartidoMensaje1.setVisibility(View.INVISIBLE);
 
-        TextView txtequipo1 = (TextView) view.findViewById(R.id.nombreequipo1);
-        TextView txtequipo2 = (TextView) view.findViewById(R.id.nombreequipo2);
+        imagenequipo1 = (ImageButton) view.findViewById(R.id.imagenequipo1);
+        imagenequipo2 = (ImageButton) view.findViewById(R.id.imagenequipo2);
+        txtequipo1 = (TextView) view.findViewById(R.id.nombreequipo1);
+        txtequipo2 = (TextView) view.findViewById(R.id.nombreequipo2);
 
         txtMarcadorEquipo1 = (TextView) view.findViewById(R.id.marcadorequipo1);
         txtMarcadorEquipo2 = (TextView) view.findViewById(R.id.marcadorequipo2);
 
+        /*************************************************************************************
+            configuracion de los equipos despues de haber optenido sus datos y su informacion
+         *************************************************************************************/
         txtequipo1.setText(Config.pEquipo1NombreMaM);
         txtequipo2.setText(Config.pEquipo2NombreMaM);
+        imagenequipo1.setBackground(Config.pEquipo1ImagenDrawable);
+        imagenequipo2.setBackground(Config.pEquipo2ImagenDrawable);
+        /**********************************************************************************/
 
         txtMarcadorEquipo1.setText(Config.marcadorEquipo1);
         txtMarcadorEquipo2.setText(Config.marcadorEquipo2);
+
 
 
         cuentapartido.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener()
         {
             @Override
             public void onChronometerTick(Chronometer cArg) {
-                long time = SystemClock.elapsedRealtime() - cArg.getBase();
+                if (Config.conexionSistema) {
+                    long time = SystemClock.elapsedRealtime() - cArg.getBase();
 
-                int h = (int) (time / 3600000);
-                int m = (int) (time - h * 3600000) / 60000;
-                int s = (int) (time - h * 3600000 - m * 60000) / 1000;
-                String hh = h < 10 ? "0" + h : h + "";
-                String mm = m < 10 ? "0" + m : m + "";
-                String ss = s < 10 ? "0" + s : s + "";
-                //cArg.setText(textoPTST +"("+ hh + ":" + mm + ":" + ss + ")");
-                cArg.setText(textoPTST +"-"+ mm + ":" + ss );
+                    int h = (int) (time / 3600000);
+                    int m = (int) (time - h * 3600000) / 60000;
+                    int s = (int) (time - h * 3600000 - m * 60000) / 1000;
+                    String hh = h < 10 ? "0" + h : h + "";
+                    String mm = m < 10 ? "0" + m : m + "";
+                    String ss = s < 10 ? "0" + s : s + "";
+                    //cArg.setText(textoPTST +"("+ hh + ":" + mm + ":" + ss + ")");
+                    cArg.setText(textoPTST + "-" + mm + ":" + ss);
 
-                txtPartidoMensaje.setText("");
-                txtPartidoMensaje1.setText("");
+                    txtPartidoMensaje.setText("");
+                    txtPartidoMensaje1.setText("");
 
-                //Log.d("REVISION INICIAL TIEMPO", (String.valueOf(time / 60)));
-                //Log.d("REVISION INICIAL TIEMPO", (String.valueOf(time / 60000)));
-                if ((time / 60) < 0) {
-                    if (time / 60000 < -180) {
-                        txtPartidoMensaje.setVisibility(View.INVISIBLE);
-                        txtPartidoMensaje1.setText("Aún falta");
-                        txtPartidoMensaje1.setVisibility(View.VISIBLE);
-                    } else {
-                        if ((time / 60) < -1015) {
-                            txtPartidoMensaje.setText("Falta " + (Math.abs(time / 60000) + 1));
-                            txtPartidoMensaje.setVisibility(View.VISIBLE);
-                            txtPartidoMensaje1.setText("Minutos!");
+                    if ((time / 60) < 0) {
+                        if (time / 60000 < -180) {
+                            txtPartidoMensaje.setVisibility(View.INVISIBLE);
+                            txtPartidoMensaje1.setText("Aún falta");
                             txtPartidoMensaje1.setVisibility(View.VISIBLE);
                         } else {
-                            txtPartidoMensaje.setText("Iniciando");
-                            txtPartidoMensaje.setVisibility(View.VISIBLE);
-                            txtPartidoMensaje1.setVisibility(View.INVISIBLE);
+                            if ((time / 60) < -1015) {
+                                txtPartidoMensaje.setText("Falta " + (Math.abs(time / 60000) + 1));
+                                txtPartidoMensaje.setVisibility(View.VISIBLE);
+                                txtPartidoMensaje1.setText("Minutos!");
+                                txtPartidoMensaje1.setVisibility(View.VISIBLE);
+                            } else {
+                                txtPartidoMensaje.setText("Iniciando");
+                                txtPartidoMensaje.setVisibility(View.VISIBLE);
+                                txtPartidoMensaje1.setVisibility(View.INVISIBLE);
+                            }
                         }
-                    }
-                } else {
-                    if ((time / 60000) >= 45) {
-                        txtPartidoMensaje.setVisibility(View.INVISIBLE);
-                        txtPartidoMensaje1.setText("Terminó");
-                        txtPartidoMensaje1.setVisibility(View.VISIBLE);
-                        cuentapartido.stop();
                     } else {
+                        if ((time / 60000) >= 45) {
+                            txtPartidoMensaje.setVisibility(View.INVISIBLE);
+                            txtPartidoMensaje1.setText("Terminó");
+                            txtPartidoMensaje1.setVisibility(View.VISIBLE);
+                            cuentapartido.stop();
+                        } else {
 
-                        if ((time/60000)%tiempoRefrescoMinAMin==minRandRefresh && s==segRandRefresh && !swipeMinutoaMinuto.isRefreshing()){
-                            ejecutarMiaAMin();
-                            /*
-                            Calendar cal = new GregorianCalendar();
-                            Date horaRefresco1 = cal.getTime();
-                            int SegundosPasados = restarFechas(horaRefresco, horaRefresco1);
+                            if ((time / 60000) % tiempoRefrescoMinAMin == minRandRefresh && s == segRandRefresh && !swipeMinutoaMinuto.isRefreshing()) {
+                                ejecutarMiaAMin();
+                            }
+                            txtPartidoMensaje.setVisibility(View.INVISIBLE);
+                            txtPartidoMensaje1.setText(cArg.getText());
+                            txtPartidoMensaje1.setVisibility(View.VISIBLE);
 
-                            if (SegundosPasados>60){
-                                Vibrator v = (Vibrator) getContext().getSystemService(Context.VIBRATOR_SERVICE);
-                                v.vibrate(200);
-                                //Toast.makeText(getContext(), "pasaron los minutos", Toast.LENGTH_SHORT).show();
-                                swipeMinutoaMinuto.setRefreshing(true);
-                                new tareaConsultaMysql().execute();
-                            }*/
                         }
-                        txtPartidoMensaje.setVisibility(View.INVISIBLE);
-                        txtPartidoMensaje1.setText(cArg.getText());
-                        txtPartidoMensaje1.setVisibility(View.VISIBLE);
-
                     }
+                }else{
+                    cuentapartido.stop();
                 }
             }
         });
-        Log.d("resta", Integer.toString(restarFechas(fechamovil, Config.horapt)));
-        if (restarFechas(fechamovil,Config.horapt)>-2700){
+        Log.d("resta", Integer.toString(herramientas.restarFechas(fechamovil, Config.horapt)));
+        if (herramientas.restarFechas(fechamovil, Config.horapt)>-2700){
             textoPTST = "PT";
-            cuentapartido.setBase(SystemClock.elapsedRealtime()+(restarFechas(fechamovil,Config.horapt)*1000));
+            cuentapartido.setBase(SystemClock.elapsedRealtime()+(herramientas.restarFechas(fechamovil, Config.horapt)*1000));
         }else {
             textoPTST = "ST";
-            cuentapartido.setBase(SystemClock.elapsedRealtime() + (restarFechas(fechamovil, Config.horast) * 1000));
+            cuentapartido.setBase(SystemClock.elapsedRealtime() + (herramientas.restarFechas(fechamovil, Config.horast) * 1000));
         }
         cuentapartido.start();
 
 
-        imagenequipo.setOnClickListener(new View.OnClickListener() {
+        imagenequipo1.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Toast.makeText(v.getContext(), "Di click en equipo 1", Toast.LENGTH_SHORT).show();
             }
@@ -239,7 +268,7 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
         swipeMinutoaMinuto.setRefreshing(true);
         Calendar cal = new GregorianCalendar();
         Date horaRefresco1 = cal.getTime();
-        int SegundosPasados = restarFechas(horaRefresco, horaRefresco1);
+        int SegundosPasados = herramientas.restarFechas(horaRefresco, horaRefresco1);
 
         if (txtPartidoMensaje1.getText().equals("Terminó") || txtPartidoMensaje1.getText().equals("Aún falta") || txtPartidoMensaje1.getText().equals("Minutos!") || SegundosPasados<60){
             swipeMinutoaMinuto.setRefreshing(false);
@@ -251,14 +280,6 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
     }
 
 
-    public static int restarFechas(Date fechaIn, Date fechaFinal ){
-        long in = fechaIn.getTime();
-        long fin = fechaFinal.getTime();
-        Long diff= (fin-in)/1000;
-        return diff.intValue();
-    }
-
-
     class tareaConsultaMysql extends AsyncTask<String,String,List<ListAdapterMinutoAMinuto>> {
 
 
@@ -267,7 +288,7 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
             Calendar cal = new GregorianCalendar();
             horaRefresco =  cal.getTime();
 
-            adaptadorMinutoaMinuto.clear();
+            if (Config.conexionSistema) adaptadorMinutoaMinuto.clear();
             ConsultaMySql consultaMsql = new ConsultaMySql();
             trespttarea = consultaMsql.consultar(2, getContext());
             consultaMsql.consultar(3, getContext());
@@ -298,6 +319,11 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
         }
 
     }
+
+
+
+
+
 
 
 

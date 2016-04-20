@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -101,7 +102,11 @@ public class ActividadPrincipal extends AppCompatActivity {
 
         if (navigationView != null) {
             prepararDrawer(navigationView);
-            seleccionarItem(navigationView.getMenu().getItem(0)); // Seleccionar item por defecto el que inicia
+            if (Config.conexionSistema) {
+                seleccionarItem(navigationView.getMenu().getItem(0)); // Seleccionar item por defecto el que inicia
+            }else{
+                seleccionarItem(navigationView.getMenu().getItem(1)); // Seleccionar item por defecto el que inicia
+            }
             refrecoObjetos.CargaPerfil(ActividadPrincipal.this); //CargarPerfil();
         }
 
@@ -109,6 +114,9 @@ public class ActividadPrincipal extends AppCompatActivity {
             Intent intent = new Intent(this, LogueoActivity.class);
             startActivityForResult(intent, 1234);
         }
+
+
+
 
         /*para la base de datos SQlite*/
         DatabaseHandler db = new DatabaseHandler(this);
@@ -394,43 +402,51 @@ public class ActividadPrincipal extends AppCompatActivity {
 
     private void captureMultimedia(int tipo) {
         if (getApplicationContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
-            Intent intent;
-            switch (tipo) {
-                case 1: //capturo foto
-                    intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                    fileUri = getOutputMediaFileUri(MEDIA_TYPE_IMAGE);
-                    intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
-                    startActivityForResult(intent, CAPTURA_CAMARA_IMAGEN_CODIGO_RESPUESTA);
-                    break;
+            if (Config.servidorEncontrado) {
+                Intent intent;
+                switch (tipo) {
+                    case 1: //capturo foto
+                        intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                        fileUri = getOutputMediaFileUri(MEDIA_TYPE_IMAGE);
+                        intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+                        startActivityForResult(intent, CAPTURA_CAMARA_IMAGEN_CODIGO_RESPUESTA);
+                        break;
 
-                case 2: //seleccion de foto de biblioteca
-                    intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                    intent.setType("image/*");
-                    startActivityForResult(intent.createChooser(intent, "Con que abrira la imagen?"), CAPTURA_BIBLIOTECA_IMAGEN_CODIGO_RESPUESTA);
-                    break;
+                    case 2: //seleccion de foto de biblioteca
+                        intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                        intent.setType("image/*");
+                        startActivityForResult(intent.createChooser(intent, "Con que abrira la imagen?"), CAPTURA_BIBLIOTECA_IMAGEN_CODIGO_RESPUESTA);
+                        break;
 
-                case 3: //capturo video
-                    intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-                    fileUri = getOutputMediaFileUri(MEDIA_TYPE_VIDEO);
-                    intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
-                    intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri); // set the image file name
-                    startActivityForResult(intent, CAPTURA_CAMARA_VIDEO_CODIGO_RESPUESTA);
-                    break;
+                    case 3: //capturo video
+                        intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+                        fileUri = getOutputMediaFileUri(MEDIA_TYPE_VIDEO);
+                        intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
+                        intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri); // set the image file name
+                        startActivityForResult(intent, CAPTURA_CAMARA_VIDEO_CODIGO_RESPUESTA);
+                        break;
 
-                case 4: //seleccionar un video
-                    intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                    intent.setType("video/*");
-                    startActivityForResult(intent.createChooser(intent, "Con que abrira el video?"), CAPTURA_BIBLIOTECA_VIDEO_CODIGO_RESPUESTA);
-                    break;
+                    case 4: //seleccionar un video
+                        intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                        intent.setType("video/*");
+                        startActivityForResult(intent.createChooser(intent, "Con que abrira el video?"), CAPTURA_BIBLIOTECA_VIDEO_CODIGO_RESPUESTA);
+                        break;
 
-                case 5: //capturar imagen de perfil
-                    rutafotos.mkdirs();
-                    fileFotoCaptura = new File(ruta_temp + "miestadioperfil.jpg");
-                    try { fileFotoCaptura.createNewFile(); } catch (IOException ex) { Log.e("ERROR ", "Error:" + ex); }
-                    Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                    cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(fileFotoCaptura));
-                    startActivityForResult(cameraIntent, CAPTURA_IMAGEN_PERFIL_CODIGO_RESPUESTA);
-                    break;
+                    case 5: //capturar imagen de perfil
+                        rutafotos.mkdirs();
+                        fileFotoCaptura = new File(ruta_temp + "miestadioperfil.jpg");
+                        try {
+                            fileFotoCaptura.createNewFile();
+                        } catch (IOException ex) {
+                            Log.e("ERROR ", "Error:" + ex);
+                        }
+                        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(fileFotoCaptura));
+                        startActivityForResult(cameraIntent, CAPTURA_IMAGEN_PERFIL_CODIGO_RESPUESTA);
+                        break;
+                }
+            }else {
+                Toast.makeText(getApplicationContext(), "Esta Opcion no funciona OffLine, por Favor conectate a la Red", Toast.LENGTH_SHORT).show();
             }
         } else {
             Toast.makeText(getApplicationContext(), "Tu camara no esta lista!!!", Toast.LENGTH_LONG).show();

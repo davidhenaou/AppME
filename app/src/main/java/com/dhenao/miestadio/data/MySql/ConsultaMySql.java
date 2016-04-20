@@ -2,9 +2,14 @@ package com.dhenao.miestadio.data.MySql;
 
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -14,12 +19,16 @@ import com.dhenao.miestadio.ActividadPrincipal;
 import com.dhenao.miestadio.R;
 import com.dhenao.miestadio.data.DatosMinutoAMinuto;
 import com.dhenao.miestadio.system.Config;
+import com.dhenao.miestadio.system.Herramientas;
 
 import org.apache.http.NameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.ParsePosition;
@@ -36,18 +45,18 @@ public class ConsultaMySql {
     public ConsultaMySql() {
     }
 
+
     public int consultar(int id, Context context) {
+
+        Herramientas herramientas = new Herramientas();
+        boolean conexion = herramientas.verificaConexion(context);
+
         int Respuest = 0; /*-2 no hay conexion, no encuentra el servidor
                             -1 no tiene datos activo en la conexion
                             0 no hay registros encontrados
                             1 encontro registros
                           */
-        Boolean conexion = false;
-        ConnectivityManager connMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
 
-        //verifico si hay conexion
-        if (networkInfo != null && networkInfo.isConnected()) conexion = true;
         if (conexion) {
             List<NameValuePair> params = new ArrayList<NameValuePair>();
             JSONParser jParser = new JSONParser();
@@ -80,8 +89,8 @@ public class ConsultaMySql {
                                 JSONArray minutosJuego = json.getJSONArray("horasprog");
                                 c = minutosJuego.getJSONObject(0);
                                 String ttextoConsulta = c.getString("horasjuego");
-                                String tfechaPartido = recortarTexto(ttextoConsulta, "FECHA(", 10);
-                                String tfechaHoraPartido = tfechaPartido + " " + recortarTexto(ttextoConsulta, "INICIA_PT(", 5);
+                                String tfechaPartido = herramientas.recortarTexto(ttextoConsulta, "FECHA(", 10);
+                                String tfechaHoraPartido = tfechaPartido + " " + herramientas.recortarTexto(ttextoConsulta, "INICIA_PT(", 5);
                                 SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm");
                                 Date consultafecha = fechamovil;
                                 try {
@@ -91,7 +100,7 @@ public class ConsultaMySql {
                                 }
                                 Config.horapt = consultafecha;
 
-                                tfechaHoraPartido = tfechaPartido + " " + recortarTexto(ttextoConsulta, "INICIA_ST(", 5);
+                                tfechaHoraPartido = tfechaPartido + " " + herramientas.recortarTexto(ttextoConsulta, "INICIA_ST(", 5);
                                 consultafecha = fechamovil;
                                 try {
                                     consultafecha = format.parse(tfechaHoraPartido);
@@ -100,10 +109,10 @@ public class ConsultaMySql {
                                 }
                                 Config.horast = consultafecha;
 
-                                String textoRecortado = recortarTexto(ttextoConsulta, "Adición_PT_(", 1);
+                                String textoRecortado = herramientas.recortarTexto(ttextoConsulta, "Adición_PT_(", 1);
                                 Config.repopt = Integer.parseInt(textoRecortado);
 
-                                textoRecortado = recortarTexto(ttextoConsulta, "Adición_ST_(", 1);
+                                textoRecortado = herramientas.recortarTexto(ttextoConsulta, "Adición_ST_(", 1);
                                 Config.repost = Integer.parseInt(textoRecortado);
                                 break;
 
@@ -152,32 +161,42 @@ public class ConsultaMySql {
                         }
                         Respuest = 1; //encontro registros
                     } else {
-                        // no hay equipos encontrados
-                        Log.d("no encontro una fecha: ", json.toString());
+                        //consulta exitosa, no hay registros
+                        Log.d("no encontro registros:", json.toString());
                         Respuest = 0; //no encontro registros
                     }
+                    Config.servidorEncontrado = true;
+                } else {
+                    //no encuentra el servidor, hay conexion
+                    Log.d("No hay servidor:", "json = null");
+                    Config.servidorEncontrado = false;
+                    Respuest = -2; //no hay servidor
                 }
             } catch (JSONException e1) {
                 e1.printStackTrace();
             }
         }else{
+            //No tiene los datos activos
             Respuest = -1; //retorna no tiene datos activo
         }
         return Respuest;
     }
 
-    public String recortarTexto(String textoCompleto, String textoarecortar, int caracteres){
-        int textobuscado = textoCompleto.indexOf(textoarecortar);
-        textoarecortar = textoCompleto.substring(textobuscado + textoarecortar.length(), textobuscado +  textoarecortar.length() + caracteres);
-        return textoarecortar;
+    private Bitmap descargarImagen (String imageHttpAddress){
+        URL imageUrl = null;
+        Bitmap imagen = null;
+        try{
+            imageUrl = new URL(imageHttpAddress);
+            HttpURLConnection conn = (HttpURLConnection) imageUrl.openConnection();
+            conn.connect();
+            imagen = BitmapFactory.decodeStream(conn.getInputStream());
+        }catch(IOException ex){
+            ex.printStackTrace();
+        }
+        return imagen;
     }
 
-    public static int restarFechas(Date fechaIn, Date fechaFinal ){
-        long in = fechaIn.getTime();
-        long fin = fechaFinal.getTime();
-        Long diff= (fin-in)/1000;
-        return diff.intValue();
-    }
+
 
 
 }

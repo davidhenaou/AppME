@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.dhenao.miestadio.R;
+import com.dhenao.miestadio.system.Config;
 
 import java.util.List;
 
@@ -61,7 +62,11 @@ public class ListAdapterMinutoAMinuto extends RecyclerView.Adapter<ListAdapterMi
 
     @Override
     public int getItemCount() {
-        return items.size();
+        if (items!=null) {
+            return items.size();
+        } else {
+            return 0;
+        }
     }
 
     @Override

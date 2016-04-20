@@ -1,5 +1,9 @@
 package com.dhenao.miestadio.system;
 
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
+
+import com.bumptech.glide.load.resource.bitmap.BitmapEncoder;
 import com.dhenao.miestadio.data.DatosMinutoAMinuto;
 
 import java.util.ArrayList;
@@ -7,6 +11,12 @@ import java.util.Date;
 import java.util.List;
 
 public class Config {
+
+    //verificaciones de funcionamiento
+    public static boolean conexionSistema = false;
+    public static boolean servidorEncontrado = false;
+
+
 
     //configuracion de perfil
     public static String UsuarioPerfil = "";
@@ -35,10 +45,12 @@ public class Config {
     public static String pEquipo1NombreMaM = "";
     public static String pEquipo1DescripcionMaM = "";
     public static String pEquipo1ImagenMaM = "";
+    public static Drawable pEquipo1ImagenDrawable;
 
     public static String pEquipo2NombreMaM = "";
     public static String pEquipo2DescripcionMaM = "";
     public static String pEquipo2ImagenMaM = "";
+    public static Drawable pEquipo2ImagenDrawable;
 
     public static Date horapt;
     public static int  repopt;
