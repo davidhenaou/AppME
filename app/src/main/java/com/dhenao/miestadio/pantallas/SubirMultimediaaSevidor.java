@@ -170,8 +170,8 @@ public class SubirMultimediaaSevidor extends Activity {
                 File sourceFile = new File(filePath);
                 // Adding file data to http body
                 entity.addPart("image", new FileBody(sourceFile));
-                entity.addPart("usuario",  new StringBody(Config.UsuarioPerfil));
-                entity.addPart("correo",  new StringBody(Config.CorreoPerfil));
+                entity.addPart("usuario", new StringBody(Config.UsuarioPerfil));
+                entity.addPart("correo", new StringBody(Config.CorreoPerfil));
                 entity.addPart("celular", new StringBody(Config.CelularPerfil));
                 entity.addPart("comentarios", new StringBody(txtComentarios.getText().toString()));
                 totalSize = entity.getContentLength();
@@ -186,6 +186,9 @@ public class SubirMultimediaaSevidor extends Activity {
                     responseString = "Se ha subido el archivo correctamente, gracias " + Config.UsuarioPerfil + " por compartirlo.";
                     //responseString = EntityUtils.toString(r_entity);
                 } else {
+                    Log.d("Error statusCode",Integer.toString(statusCode));
+                    Log.d("Error devuelto response",response.toString());
+                    Log.d("Error devuelto r_entity",r_entity.toString());
                     responseString = "Ha ocurrido un error. Por favor intente de nuevo.";
                 }
 

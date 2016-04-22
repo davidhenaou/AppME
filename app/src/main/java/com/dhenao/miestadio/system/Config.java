@@ -2,9 +2,12 @@ package com.dhenao.miestadio.system;
 
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 
 import com.bumptech.glide.load.resource.bitmap.BitmapEncoder;
+import com.dhenao.miestadio.R;
 import com.dhenao.miestadio.data.DatosMinutoAMinuto;
+import com.dhenao.miestadio.data.DatosMultimedia;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,13 +19,10 @@ public class Config {
     public static boolean conexionSistema = false;
     public static boolean servidorEncontrado = false;
 
-
-
     //configuracion de perfil
     public static String UsuarioPerfil = "";
     public static String CorreoPerfil = "";
     public static String CelularPerfil = "";
-
 
     public static String ipequipo = "52.38.165.244";
 
@@ -36,21 +36,17 @@ public class Config {
     public static final String URL_MYSQL_EQUIPOS = "http://" + ipequipo + "/mysql/obtener_equipos.php";
     public static final String URL_MYSQL_HORASYFECHASJUEGO = "http://" + ipequipo + "/mysql/obtener_informaciondejuego.php";
     public static final String URL_MYSQL_MINUTOAMINUTO = "http://" + ipequipo + "/mysql/obtener_minamin.php";
-    public static final String URL_MYSQL_MINUTOSJUEGO = "http://" + ipequipo + "/mysql/obtener_minutos_juego.php";
     public static final String URL_MARCADOR_PARTIDO = "http://" + ipequipo + "/mysql/obtener_marcador.php";
-
-
+    public static final String URL_FOTOS_PARTIDO = "http://" + ipequipo + "/mysql/obtener_multimedia.php";
 
     //informacion de minuto a minuto
-    public static String pEquipo1NombreMaM = "";
+    public static String pEquipo1NombreMaM = "equipo1";
     public static String pEquipo1DescripcionMaM = "";
-    public static String pEquipo1ImagenMaM = "";
-    public static Drawable pEquipo1ImagenDrawable;
+    public static String pEquipo1ImagenMaM = "drawable://" + R.drawable.imagencargada;
 
-    public static String pEquipo2NombreMaM = "";
+    public static String pEquipo2NombreMaM = "equipo2";
     public static String pEquipo2DescripcionMaM = "";
-    public static String pEquipo2ImagenMaM = "";
-    public static Drawable pEquipo2ImagenDrawable;
+    public static String pEquipo2ImagenMaM = "drawable://" + R.drawable.imagencargada;
 
     public static Date horapt;
     public static int  repopt;
@@ -60,10 +56,10 @@ public class Config {
     public static String marcadorEquipo1;
     public static String marcadorEquipo2;
 
-    /*public static int minutosjuego = 0;
-    public static int segundosjuego = 0;*/
 
-    public static List<DatosMinutoAMinuto> MinutoItems ; // = new ArrayList<DatosMinutoAMinuto>();
+    public static List<DatosMinutoAMinuto> MinutoItems ;
+    public static List<DatosMultimedia> MultimediaItems ;
+    public static String idmultimedia = "0";
 
 
 }

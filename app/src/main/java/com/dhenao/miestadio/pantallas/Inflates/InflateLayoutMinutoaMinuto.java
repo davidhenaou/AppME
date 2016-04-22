@@ -36,8 +36,11 @@ import com.dhenao.miestadio.data.DatosMultimedia;
 import com.dhenao.miestadio.data.ListAdapterMinutoAMinuto;
 import com.dhenao.miestadio.data.ListAdapterMultimedia;
 import com.dhenao.miestadio.data.MySql.ConsultaMySql;
+import com.dhenao.miestadio.data.SQlite.DatabaseHandler;
+import com.dhenao.miestadio.data.SQlite.EquipoFutbol;
 import com.dhenao.miestadio.system.Config;
 import com.dhenao.miestadio.system.Herramientas;
+import com.squareup.picasso.Picasso;
 
 import org.w3c.dom.Text;
 
@@ -58,7 +61,7 @@ import java.util.Timer;
 public class InflateLayoutMinutoaMinuto extends Fragment {
 
     /*********configuracion de equipos*********/
-    ImageButton imagenequipo1,imagenequipo2;
+    ImageView imagenequipo1, imagenequipo2;
     TextView txtequipo1, txtequipo2;
     /****************************************/
 
@@ -143,8 +146,8 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
         txtPartidoMensaje.setVisibility(View.INVISIBLE);
         txtPartidoMensaje1.setVisibility(View.INVISIBLE);
 
-        imagenequipo1 = (ImageButton) view.findViewById(R.id.imagenequipo1);
-        imagenequipo2 = (ImageButton) view.findViewById(R.id.imagenequipo2);
+        imagenequipo1 = (ImageView) view.findViewById(R.id.imagenequipo1);
+        imagenequipo2 = (ImageView) view.findViewById(R.id.imagenequipo2);
         txtequipo1 = (TextView) view.findViewById(R.id.nombreequipo1);
         txtequipo2 = (TextView) view.findViewById(R.id.nombreequipo2);
 
@@ -154,15 +157,19 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
         /*************************************************************************************
             configuracion de los equipos despues de haber optenido sus datos y su informacion
          *************************************************************************************/
+        DatabaseHandler db = new DatabaseHandler(getContext());
+        db.actualizarInfoEquipos(getContext());
+
         txtequipo1.setText(Config.pEquipo1NombreMaM);
         txtequipo2.setText(Config.pEquipo2NombreMaM);
-        imagenequipo1.setBackground(Config.pEquipo1ImagenDrawable);
-        imagenequipo2.setBackground(Config.pEquipo2ImagenDrawable);
+        Picasso.with(getContext()).load(Config.pEquipo1ImagenMaM).placeholder(R.drawable.imagencargada).into(imagenequipo1);
+        Picasso.with(getContext()).load(Config.pEquipo2ImagenMaM).placeholder(R.drawable.imagencargada).into(imagenequipo2);
+        //Picasso.with(getContext()).setIndicatorsEnabled(true);
+        //imagenequipo1.setBackground(Config.pEquipo1ImagenDrawable);
         /**********************************************************************************/
 
         txtMarcadorEquipo1.setText(Config.marcadorEquipo1);
         txtMarcadorEquipo2.setText(Config.marcadorEquipo2);
-
 
 
         cuentapartido.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener()
@@ -274,7 +281,7 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
             swipeMinutoaMinuto.setRefreshing(false);
         }else{
             Vibrator v = (Vibrator) getContext().getSystemService(Context.VIBRATOR_SERVICE);
-            v.vibrate(100);
+            v.vibrate(500);
             new tareaConsultaMysql().execute();
         }
     }
@@ -290,8 +297,8 @@ public class InflateLayoutMinutoaMinuto extends Fragment {
 
             if (Config.conexionSistema) adaptadorMinutoaMinuto.clear();
             ConsultaMySql consultaMsql = new ConsultaMySql();
-            trespttarea = consultaMsql.consultar(2, getContext());
-            consultaMsql.consultar(3, getContext());
+            trespttarea = consultaMsql.consultar(2, getContext(),"");
+            consultaMsql.consultar(3, getContext(),"");
 
             try {
                 Thread.sleep(2000);

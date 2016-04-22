@@ -18,10 +18,14 @@ import android.widget.Toast;
 import com.dhenao.miestadio.ActividadPrincipal;
 import com.dhenao.miestadio.R;
 import com.dhenao.miestadio.data.DatosMinutoAMinuto;
+import com.dhenao.miestadio.data.SQlite.DatabaseHandler;
+import com.dhenao.miestadio.data.SQlite.EquipoFutbol;
+import com.dhenao.miestadio.data.SQlite.tbConfiguracion;
 import com.dhenao.miestadio.system.Config;
 import com.dhenao.miestadio.system.Herramientas;
 
 import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -46,7 +50,7 @@ public class ConsultaMySql {
     }
 
 
-    public int consultar(int id, Context context) {
+    public int consultar(int id, Context context, String parametro) {
 
         Herramientas herramientas = new Herramientas();
         boolean conexion = herramientas.verificaConexion(context);
@@ -68,10 +72,13 @@ public class ConsultaMySql {
                 case 1: tempConsulta = Config.URL_MYSQL_EQUIPOS; break;
                 case 2: tempConsulta = Config.URL_MYSQL_MINUTOAMINUTO; break;
                 case 3: tempConsulta = Config.URL_MARCADOR_PARTIDO; break;
+                case 4: tempConsulta = Config.URL_FOTOS_PARTIDO; break;
             }
 
 
             try {
+                if (id==4) params.add(new BasicNameValuePair("id", parametro));
+
                 JSONObject json = jParser.makeHttpRequest(tempConsulta, "GET", params);
                 if (json != null) {
                     // chequeando estado
@@ -156,6 +163,23 @@ public class ConsultaMySql {
                                 c = marcadoresJson.getJSONObject(0);
                                 Config.marcadorEquipo1 = c.getString("golsequipo1");
                                 Config.marcadorEquipo2 = c.getString("golsequipo2");
+                                break;
+
+                            case 4://consulta la informacion de imagenes
+                                //Config.MinutoItems.clear();
+                                Config.MinutoItems = new ArrayList<DatosMinutoAMinuto>();
+                                //Config.MinutoItems.clear();
+                                Log.d("Minuto a minuto: ", json.toString());
+                                // registros de minuto a minuto
+                                JSONArray multimedia = json.getJSONArray("minamin");
+
+                                for (int i = 0; i < multimedia.length(); i++) {
+                                    c = multimedia.getJSONObject(i);
+                                    if (c.getInt("equipo")==0) Config.MinutoItems.add(new DatosMinutoAMinuto("",c.getString("descripcion"),c.getString("accion"),""));
+                                    if (c.getInt("equipo")==1) Config.MinutoItems.add(new DatosMinutoAMinuto(c.getString("minuto"),c.getString("descripcion"),c.getString("accion"),""));
+                                    if (c.getInt("equipo")==2) Config.MinutoItems.add(new DatosMinutoAMinuto("",c.getString("descripcion"),c.getString("accion"),c.getString("minuto")));
+                                }
+
                                 break;
 
                         }

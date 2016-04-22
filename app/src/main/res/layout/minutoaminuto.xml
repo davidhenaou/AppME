@@ -18,13 +18,12 @@
             android:gravity="center"
             android:weightSum="1">
 
-            <ImageButton
+            <ImageView
                 style="@style/ObjetoRedondo"
                 android:src="@drawable/objeto_redondo_transparente"
                 android:id="@+id/imagenequipo1"
                 android:layout_width="70dp"
                 android:layout_height="70dp"
-                android:background="@drawable/equipo1"
                 android:layout_marginRight="10dp"
                 android:layout_marginLeft="10dp"
                 android:layout_marginTop="10dp"
@@ -123,13 +122,12 @@
             android:gravity="center">
 
 
-            <ImageButton
+            <ImageView
                 style="@style/ObjetoRedondo"
                 android:src="@drawable/objeto_redondo_transparente"
                 android:id="@+id/imagenequipo2"
                 android:layout_width="70dp"
                 android:layout_height="70dp"
-                android:background="@drawable/equipo2"
                 android:layout_marginRight="10dp"
                 android:layout_marginLeft="10dp"
                 android:layout_marginTop="10dp"

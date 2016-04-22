@@ -39,6 +39,7 @@ import android.widget.Toast;
 import com.dhenao.miestadio.data.MySql.RefrescarObjetos;
 import com.dhenao.miestadio.data.SQlite.DatabaseHandler;
 import com.dhenao.miestadio.data.SQlite.EquipoFutbol;
+import com.dhenao.miestadio.data.SQlite.tbConfiguracion;
 import com.dhenao.miestadio.system.ActividadConfiguracion;
 import com.dhenao.miestadio.system.Config;
 import com.dhenao.miestadio.system.autenticacion.LogueoActivity;
@@ -116,18 +117,19 @@ public class ActividadPrincipal extends AppCompatActivity {
         }
 
 
-
-
         /*para la base de datos SQlite*/
-        DatabaseHandler db = new DatabaseHandler(this);
+        /*DatabaseHandler db = new DatabaseHandler(this);
         db.deleteAllEquipo();
-        db.addEquipo(new EquipoFutbol("David","esta es una prueba","la imagen"));
+        db.addEquipo(new EquipoFutbol("David", "esta es una prueba", "la imagen"));
         db.addEquipo(new EquipoFutbol("Juliet","otra prueba","la mas linda"));
         List<EquipoFutbol> equipos = db.getAllEquipos();
         for (EquipoFutbol cn : equipos) {
             String log = "Id: "+cn.getID()+" ,Nombre: " + cn.getNombre() + " ,Descripcion: " + cn.getDescripcion() + " ,Imagen: " + cn.getImagen();
             Log.d("Nombre: ", log);
-        }
+        }*/
+
+
+
         /**/
 
 

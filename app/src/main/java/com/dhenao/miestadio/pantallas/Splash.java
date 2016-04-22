@@ -18,11 +18,15 @@ import android.widget.Toast;
 import com.dhenao.miestadio.ActividadPrincipal;
 import com.dhenao.miestadio.R;
 import com.dhenao.miestadio.data.MySql.ConsultaMySql;
+import com.dhenao.miestadio.data.SQlite.DatabaseHandler;
+import com.dhenao.miestadio.data.SQlite.EquipoFutbol;
+import com.dhenao.miestadio.data.SQlite.tbConfiguracion;
 import com.dhenao.miestadio.system.Config;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -35,7 +39,12 @@ public class Splash extends Activity {
     private static final long SPLASH_SCREEN_DELAY = 3000;
     Timer timer;
     TimerTask task;
-    CargaImagenes nuevaTarea;
+    Date fechaActual;
+    int dia, mes, año;
+    public boolean ejecutaConsulta = false;
+    public int trespt = 0;
+    DatabaseHandler db;
+    Calendar cal;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,9 +57,22 @@ public class Splash extends Activity {
         setContentView(R.layout.splash_screen);
 
         /*obtener fecha y hora del celular*/
-        //Calendar cal = new GregorianCalendar();
-        //Config.horapt = cal.getTime();
+        cal = new GregorianCalendar();
+        fechaActual = cal.getTime();
+        dia = Integer.parseInt((String) android.text.format.DateFormat.format("dd", fechaActual));
+        mes = Integer.parseInt((String) android.text.format.DateFormat.format("MM", fechaActual));
+        año = Integer.parseInt((String) android.text.format.DateFormat.format("yyyy", fechaActual));
+
         /********************************/
+
+        /*para la base de datos SQlite*/
+        db = new DatabaseHandler(getApplicationContext());
+        tbConfiguracion tbconfiguracion = db.getConfiguracion();
+        if (tbconfiguracion.getUltimoIngresoAño()==null || tbconfiguracion.getUltimoIngresoAño()==1983 || tbconfiguracion.getUltimoIngresoDia()!= dia || tbconfiguracion.getUltimoIngresoMes()!= mes || tbconfiguracion.getUltimoIngresoAño()!= año){
+            //variable que indica si ya actualizó la informacion del dia - si es true es por que hay que actualizar
+            ejecutaConsulta = true;
+        }
+
 
 
         task = new TimerTask() {
@@ -66,13 +88,14 @@ public class Splash extends Activity {
 
 
     class TareaAsincConsultaInicial extends AsyncTask<String,String,String> {
-        public int trespt;
         protected String doInBackground(String... args) {
             ConsultaMySql consultaMsql = new ConsultaMySql();
-            trespt = consultaMsql.consultar(0, getApplicationContext());
-            trespt = consultaMsql.consultar(1, getApplicationContext());
-            trespt = consultaMsql.consultar(2, getApplicationContext());
-            trespt = consultaMsql.consultar(3, getApplicationContext());
+            trespt = consultaMsql.consultar(0, getApplicationContext(),""); //horas de juego - pueden cambiar en el transcurso del dia
+            if (ejecutaConsulta){
+                trespt = consultaMsql.consultar(1, getApplicationContext(),""); //equipos, se consulta una vez al dia
+            }
+            trespt = consultaMsql.consultar(2, getApplicationContext(),"");
+            trespt = consultaMsql.consultar(3, getApplicationContext(),"");
             return null;
         }
 
@@ -82,58 +105,17 @@ public class Splash extends Activity {
                     timer = new Timer();
                     timer.schedule(task, SPLASH_SCREEN_DELAY);
 
-                    nuevaTarea = new CargaImagenes();
-                    nuevaTarea.execute(Config.pEquipo1ImagenMaM);
-
                     if (!Config.conexionSistema) Toast.makeText(getApplicationContext(), "No se encuentran los datos activos", Toast.LENGTH_SHORT).show();
                     if (!Config.servidorEncontrado) Toast.makeText(getApplicationContext(), "No ha encontrado el servidor, por favor conéctese correctamente" , Toast.LENGTH_SHORT).show();
-                    /*switch (trespt) {
-                        case -2: Toast.makeText(getApplicationContext(), "No hay conexión" , Toast.LENGTH_SHORT).show(); break;
-                        //case -1: Toast.makeText(getApplicationContext(), "No tiene los datos activos" , Toast.LENGTH_SHORT).show(); break;
-                    }*/
+
+                    if (ejecutaConsulta) {
+                        db.updateConfiguracion(new tbConfiguracion(dia, mes, año));
+                        db.updateEquipo(new EquipoFutbol(1, Config.pEquipo1NombreMaM, Config.pEquipo1DescripcionMaM, Config.pEquipo1ImagenMaM));
+                        db.updateEquipo(new EquipoFutbol(2,Config.pEquipo2NombreMaM,Config.pEquipo2DescripcionMaM,Config.pEquipo2ImagenMaM));
+                    }
+
                 }
             });
         }
-    }
-
-
-
-    private class CargaImagenes extends AsyncTask<String, Void, Bitmap> {
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected Bitmap doInBackground(String... params) {
-            //String url = params[0];
-            Bitmap imagen = descargarImagen(Config.pEquipo1ImagenMaM);
-            Config.pEquipo1ImagenDrawable = new BitmapDrawable(Resources.getSystem(), imagen);
-            imagen = descargarImagen(Config.pEquipo2ImagenMaM);
-            Config.pEquipo2ImagenDrawable = new BitmapDrawable(Resources.getSystem(), imagen);
-
-            return imagen;
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap result) {
-            super.onPostExecute(result);
-        }
-
-    }
-
-    private Bitmap descargarImagen (String imageHttpAddress){
-        URL imageUrl = null;
-        Bitmap imagen = null;
-        try{
-            imageUrl = new URL(imageHttpAddress);
-            HttpURLConnection conn = (HttpURLConnection) imageUrl.openConnection();
-            conn.connect();
-            imagen = BitmapFactory.decodeStream(conn.getInputStream());
-        }catch(IOException ex){
-            ex.printStackTrace();
-        }
-        return imagen;
     }
 }

@@ -1,5 +1,9 @@
 package com.dhenao.miestadio.data.SQlite;
 
+import android.content.Context;
+
+import com.dhenao.miestadio.system.Config;
+
 public class EquipoFutbol {
 
     //private variables
@@ -43,5 +47,6 @@ public class EquipoFutbol {
     public String getImagen(){ return this._imagen; }
 
     public void setImagen(String imagen){ this._imagen = imagen; }
+
 
 }

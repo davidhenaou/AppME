@@ -2,8 +2,10 @@ package com.dhenao.miestadio.system;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -47,6 +49,32 @@ public class Herramientas {
     }
 
 
+
+    private class CargaImagenes extends AsyncTask<String, Void, Bitmap> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Bitmap doInBackground(String... params) {
+            //String url = params[0];
+            Bitmap imagen = descargarImagen(Config.pEquipo1ImagenMaM);
+            //Config.pEquipo1ImagenDrawable = new BitmapDrawable(Resources.getSystem(), imagen);
+            //imagen = descargarImagen(Config.pEquipo2ImagenMaM);
+            //Config.pEquipo2ImagenDrawable = new BitmapDrawable(Resources.getSystem(), imagen);
+
+            return imagen;
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap result) {
+            super.onPostExecute(result);
+        }
+
+    }
+
     private Bitmap descargarImagen (String imageHttpAddress){
         URL imageUrl = null;
         Bitmap imagen = null;
@@ -60,40 +88,4 @@ public class Herramientas {
         }
         return imagen;
     }
-
-    /*
-    private class CargaImagen extends AsyncTask<String, Void, Bitmap> {
-
-        ProgressDialog pDialog;
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-
-            pDialog = new ProgressDialog(MainActivity.this);
-            pDialog.setMessage("Cargando Imagen");
-            pDialog.setCancelable(true);
-            pDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            pDialog.show();
-
-        }
-
-        @Override
-        protected Bitmap doInBackground(String... params) {
-            String url = params[0];
-            Bitmap imagen = descargarImagen(url);
-            return imagen;
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap result) {
-            // TODO Auto-generated method stub
-            super.onPostExecute(result);
-
-            //imgImagen.setImageBitmap(result);
-            //pDialog.dismiss();
-        }
-
-    }*/
 }

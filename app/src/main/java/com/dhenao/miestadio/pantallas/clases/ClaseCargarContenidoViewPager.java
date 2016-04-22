@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import com.dhenao.miestadio.R;
 import com.dhenao.miestadio.pantallas.Inflates.InflateLayoutCalendario;
 import com.dhenao.miestadio.pantallas.Inflates.InflateLayoutMinutoaMinuto;
+import com.dhenao.miestadio.pantallas.Inflates.InflateLayoutMultimedia;
 import com.dhenao.miestadio.pantallas.Inflates.InflateLayoutNarracion;
 
 public class ClaseCargarContenidoViewPager extends Fragment{
@@ -65,8 +66,8 @@ public class ClaseCargarContenidoViewPager extends Fragment{
                 adapter.addFragment(ClaseTabsLLenadoConListas.nuevaInstancia(itemMenu, nmeroItem++), getString(R.string.titulo_item1_tab3));
                 break;
             case 2: //multimedia (item del menu, numero de item)
-                adapter.addFragment(ClaseTabsLLenadoConListas.nuevaInstancia(itemMenu, nmeroItem++), getString(R.string.titulo_item2_tab1));
-                adapter.addFragment(ClaseTabsLLenadoConListas.nuevaInstancia(itemMenu, nmeroItem++), getString(R.string.titulo_item2_tab2));
+                adapter.addFragment(InflateLayoutMultimedia.nuevaInstancia(itemMenu, nmeroItem++), getString(R.string.titulo_item2_tab1));
+                adapter.addFragment(InflateLayoutMultimedia.nuevaInstancia(itemMenu, nmeroItem++), getString(R.string.titulo_item2_tab2));
                 break;
 
             case 3: //Narracion
